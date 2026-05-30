@@ -50,20 +50,25 @@
   }
 }
 
+body {
+  margin: 0;
+  background-image: url('./assets/hero.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
 #root {
-  width: 1126px;
-  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
+  background-color: rgba(15, 52, 96, 0.85); /* Overlay global */
 }
 
 h1,
