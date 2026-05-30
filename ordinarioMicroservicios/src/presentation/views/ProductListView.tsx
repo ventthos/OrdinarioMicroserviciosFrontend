@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useProductViewModel } from '../hooks/useProductViewModel';
-import heroBackground from '../../assets/hero.png';
+import { ProductFormModal } from '../components/ProductFormModal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 export const ProductListView: React.FC = () => {
-    const { products, loading, error, deleteProduct } = useProductViewModel();
+    const { 
+        products, 
+        loading, 
+        error, 
+        deleteProduct, 
+        createProduct, 
+        modalConfig, 
+        closeModal,
+        showNotification 
+    } = useProductViewModel();
+    const [isFormOpen, setIsFormOpen] = useState(false);
 
     if (loading) {
         return (
@@ -22,54 +33,80 @@ export const ProductListView: React.FC = () => {
     }
 
     return (
-        <div style={styles.content}>
-            <header style={styles.header}>
-                <h1 style={styles.title}>GAME NEXUS POS</h1>
-                <div style={styles.stats}>
-                    TOTAL DE ARTÍCULOS: {products.length}
-                </div>
-            </header>
-            <main style={styles.tableContainer}>
-                {products.length === 0 ? (
-                    <p style={styles.emptyText}>NO SE DETECTÓ INVENTARIO</p>
-                ) : (
-                    <table style={styles.table}>
-                        <thead>
-                            <tr>
-                                <th style={styles.th}>IMAGEN</th>
-                                <th style={styles.th}>NOMBRE</th>
-                                <th style={styles.th}>DESCRIPCIÓN</th>
-                                <th style={styles.th}>PRECIO</th>
-                                <th style={styles.th}>STOCK</th>
-                                <th style={styles.th}>PROVEEDOR</th>
-                                <th style={styles.th}>ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {products.map(product => (
-                                <tr key={product.id} style={styles.tr}>
-                                    <td style={styles.td}>
-                                        <img src={product.imageUrl} alt={product.name} style={styles.productImg} />
-                                    </td>
-                                    <td style={{ ...styles.td, color: '#4ecca3', fontWeight: 'bold' }}>{product.name}</td>
-                                    <td style={styles.td}>{product.description}</td>
-                                    <td style={{ ...styles.td, color: '#e94560' }}>${product.price.toFixed(2)}</td>
-                                    <td style={styles.td}>{product.quantity}</td>
-                                    <td style={styles.td}>{product.supplier}</td>
-                                    <td style={styles.td}>
-                                        <button 
-                                            onClick={() => deleteProduct(product.id)}
-                                            style={styles.deleteButton}
-                                        >
-                                            ELIMINAR
-                                        </button>
-                                    </td>
+        <div style={styles.container}>
+            <div style={styles.content}>
+                <header style={styles.header}>
+                    <h1 style={styles.title}>GAME NEXUS POS</h1>
+                    <div style={styles.headerActions}>
+                        <button 
+                            onClick={() => setIsFormOpen(true)}
+                            style={styles.createButton}
+                        >
+                            + NUEVO PRODUCTO
+                        </button>
+                        <div style={styles.stats}>
+                            TOTAL DE ARTÍCULOS: {products.length}
+                        </div>
+                    </div>
+                </header>
+                <main style={styles.tableContainer}>
+                    {products.length === 0 ? (
+                        <p style={styles.emptyText}>NO SE DETECTÓ INVENTARIO</p>
+                    ) : (
+                        <table style={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th style={styles.th}>IMAGEN</th>
+                                    <th style={styles.th}>NOMBRE</th>
+                                    <th style={styles.th}>DESCRIPCIÓN</th>
+                                    <th style={styles.th}>PRECIO</th>
+                                    <th style={styles.th}>STOCK</th>
+                                    <th style={styles.th}>PROVEEDOR</th>
+                                    <th style={styles.th}>ACCIONES</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </main>
+                            </thead>
+                            <tbody>
+                                {products.map(product => (
+                                    <tr key={product.id} style={styles.tr}>
+                                        <td style={styles.td}>
+                                            <img src={product.imageUrl} alt={product.name} style={styles.productImg} />
+                                        </td>
+                                        <td style={{ ...styles.td, color: '#4ecca3', fontWeight: 'bold' }}>{product.name}</td>
+                                        <td style={styles.td}>{product.description}</td>
+                                        <td style={{ ...styles.td, color: '#e94560' }}>${product.price.toFixed(2)}</td>
+                                        <td style={styles.td}>{product.quantity}</td>
+                                        <td style={styles.td}>{product.supplier}</td>
+                                        <td style={styles.td}>
+                                            <button 
+                                                onClick={() => deleteProduct(product.id)}
+                                                style={styles.deleteButton}
+                                            >
+                                                ELIMINAR
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </main>
+            </div>
+
+            <ProductFormModal 
+                isOpen={isFormOpen} 
+                onClose={() => setIsFormOpen(false)} 
+                onSubmit={createProduct} 
+                onError={(msg) => showNotification("ADVERTENCIA", msg, "info")}
+            />
+
+            <ConfirmationModal 
+                isOpen={modalConfig.isOpen}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                onConfirm={modalConfig.onConfirm}
+                onCancel={closeModal}
+            />
         </div>
     );
 };
@@ -94,8 +131,23 @@ const styles: { [key: string]: React.CSSProperties } = {
     title: {
         margin: 0,
         color: '#4ecca3',
-        fontSize: '2.5rem',
-        textShadow: '0 0 10px #4ecca3'
+        fontSize: '2.5rem'
+    },
+    headerActions: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '20px'
+    },
+    createButton: {
+        backgroundColor: '#4ecca3',
+        color: '#1a1a2e',
+        border: 'none',
+        padding: '10px 20px',
+        borderRadius: '5px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        fontSize: '1rem',
+        transition: 'transform 0.2s'
     },
     stats: {
         color: '#fff',

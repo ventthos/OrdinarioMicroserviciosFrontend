@@ -4,6 +4,7 @@ import type { ApiResponse, ProductDTO } from "../dto/ProductDTO";
 
 export class ApiProductRepository implements ProductRepository {
     private readonly apiUrl = "http://localhost:8085/productos";
+    private readonly deleteUrl = "http://localhost:8085/productos";
 
     async getProducts(): Promise<Product[]> {
         const response = await fetch(this.apiUrl);
@@ -28,11 +29,36 @@ export class ApiProductRepository implements ProductRepository {
     }
 
     async deleteProduct(id: string): Promise<void> {
-        const response = await fetch(`${this.apiUrl}/${id}`, {
+        const response = await fetch(`${this.deleteUrl}/${id}`, {
             method: "DELETE"
         });
-        if (!response.ok) {
-            throw new Error("Error al eliminar el producto");
+
+        const result: ApiResponse<null> = await response.json();
+
+        if (!response.ok || result.status !== "SUCCESS") {
+            throw new Error(result.message || "No se pudo eliminar el producto");
         }
+    }
+
+    async createProduct(product: Omit<Product, 'id'>): Promise<Product> {
+        const response = await fetch(this.apiUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(product)
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al crear el producto");
+        }
+
+        const result: ApiResponse<Product> = await response.json();
+        
+        if (result.status !== "SUCCESS") {
+            throw new Error(result.message || "Error al crear el producto");
+        }
+
+        return result.data;
     }
 }
