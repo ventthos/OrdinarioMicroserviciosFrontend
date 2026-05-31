@@ -189,7 +189,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         borderCollapse: 'collapse',
     },
     th: {
-        textAlign: 'left',
+        textAlign: 'center',
         padding: '20px',
         backgroundColor: 'rgba(124, 58, 237, 0.05)',
         color: Theme.colors.primary,
@@ -207,6 +207,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         padding: '20px',
         fontSize: '0.95rem',
         color: Theme.colors.text,
+        textAlign: 'center',
     },
     idBadge: {
         backgroundColor: Theme.colors.surfaceLight,

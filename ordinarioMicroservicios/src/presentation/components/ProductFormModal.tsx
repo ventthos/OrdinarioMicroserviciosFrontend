@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Product } from '../../domain/models/Product';
+import { Theme } from '../theme';
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -29,7 +30,6 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Validation: All except imageUrl must not be empty
         if (!formData.name || !formData.description || !formData.price || !formData.quantity || !formData.supplier) {
             onError("Todos los campos excepto la imagen son obligatorios.");
             return;
@@ -55,7 +55,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                 description: formData.description,
                 price: price,
                 quantity: quantity,
-                imageUrl: formData.imageUrl || "http://placeimg.com/640/480",
+                imageUrl: formData.imageUrl || "https://placehold.co/600x400/16161a/bc13fe?text=Game+Asset",
                 supplier: formData.supplier
             });
 
@@ -80,34 +80,41 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
     return (
         <div style={styles.backdrop}>
             <div style={styles.modal}>
-                <h2 style={styles.title}>NUEVO PRODUCTO</h2>
+                <div style={styles.header}>
+                    <h2 style={styles.title}>Nuevo Producto</h2>
+                    <div style={styles.titleLine}></div>
+                </div>
+
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.formGroup}>
-                        <label style={styles.label}>NOMBRE</label>
+                        <label style={styles.label}>Nombre del Artículo</label>
                         <input 
                             name="name" 
                             value={formData.name} 
                             onChange={handleChange} 
                             style={styles.input} 
-                            placeholder="Nombre del producto"
+                            placeholder="Ej: Consola Retro Z-9000"
                         />
                     </div>
+                    
                     <div style={styles.formGroup}>
-                        <label style={styles.label}>DESCRIPCIÓN</label>
+                        <label style={styles.label}>Descripción</label>
                         <textarea 
                             name="description" 
                             value={formData.description} 
                             onChange={handleChange} 
-                            style={{ ...styles.input, height: '60px' }} 
-                            placeholder="Descripción"
+                            style={{ ...styles.input, height: '80px', resize: 'none' }} 
+                            placeholder="Detalles técnicos o de catálogo..."
                         />
                     </div>
+
                     <div style={styles.row}>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>PRECIO</label>
+                            <label style={styles.label}>Precio (USD)</label>
                             <input 
                                 name="price" 
                                 type="number" 
+                                step="0.01"
                                 value={formData.price} 
                                 onChange={handleChange} 
                                 style={styles.input} 
@@ -115,7 +122,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                             />
                         </div>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>STOCK</label>
+                            <label style={styles.label}>Stock Inicial</label>
                             <input 
                                 name="quantity" 
                                 type="number" 
@@ -126,36 +133,35 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                             />
                         </div>
                     </div>
+
                     <div style={styles.formGroup}>
-                        <label style={styles.label}>URL DE IMAGEN (OPCIONAL)</label>
+                        <label style={styles.label}>URL de Imagen de Portada</label>
                         <input 
                             name="imageUrl" 
                             value={formData.imageUrl} 
                             onChange={handleChange} 
                             style={styles.input} 
-                            placeholder="http://..."
+                            placeholder="https://servidor.com/imagen.jpg"
                         />
                     </div>
-                    {formData.imageUrl && (
-                        <div style={styles.previewContainer}>
-                            <p style={styles.label}>VISTA PREVIA:</p>
-                            <img src={formData.imageUrl} alt="Preview" style={styles.preview} />
-                        </div>
-                    )}
+
                     <div style={styles.formGroup}>
-                        <label style={styles.label}>PROVEEDOR</label>
+                        <label style={styles.label}>Fabricante / Proveedor</label>
                         <input 
                             name="supplier" 
                             value={formData.supplier} 
                             onChange={handleChange} 
                             style={styles.input} 
-                            placeholder="Nombre del proveedor"
+                            placeholder="Ej: Nintendo, Sony, Fanatec..."
                         />
                     </div>
+
                     <div style={styles.actions}>
-                        <button type="button" onClick={onClose} style={styles.cancelBtn}>CANCELAR</button>
+                        <button type="button" onClick={onClose} style={styles.cancelBtn}>
+                            Cancelar
+                        </button>
                         <button type="submit" disabled={submitting} style={styles.submitBtn}>
-                            {submitting ? 'CREANDO...' : 'GUARDAR PRODUCTO'}
+                            {submitting ? 'Registrando...' : 'Confirmar Ingreso'}
                         </button>
                     </div>
                 </form>
@@ -171,88 +177,95 @@ const styles: { [key: string]: React.CSSProperties } = {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1000,
-        backdropFilter: 'blur(5px)'
+        zIndex: 2000,
+        backdropFilter: 'blur(10px)'
     },
     modal: {
-        backgroundColor: '#1a1a2e',
-        border: '2px solid #4ecca3',
-        borderRadius: '10px',
+        backgroundColor: Theme.colors.surface,
+        border: `1px solid ${Theme.colors.border}`,
+        borderRadius: '24px',
         width: '90%',
-        maxWidth: '500px',
-        padding: '30px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)'
+        maxWidth: '550px',
+        padding: '40px',
+        boxShadow: Theme.shadows.glow,
+        animation: 'scaleUp 0.3s ease-out',
+    },
+    header: {
+        textAlign: 'center',
+        marginBottom: '30px'
     },
     title: {
-        color: '#4ecca3',
-        marginTop: 0,
-        textAlign: 'center',
-        letterSpacing: '2px'
+        color: Theme.colors.text,
+        margin: 0,
+        fontSize: '2rem',
+    },
+    titleLine: {
+        height: '3px',
+        width: '60px',
+        backgroundColor: Theme.colors.primary,
+        margin: '10px auto 0',
+        borderRadius: '2px',
+        boxShadow: Theme.shadows.glow,
     },
     form: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '15px'
+        gap: '20px'
     },
     formGroup: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '5px'
+        gap: '8px'
     },
     row: {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
-        gap: '15px'
+        gap: '20px'
     },
     label: {
-        color: '#e94560',
-        fontSize: '0.8rem',
-        fontWeight: 'bold'
+        color: Theme.colors.textMuted,
+        fontSize: '0.85rem',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px'
     },
     input: {
-        backgroundColor: '#16213e',
-        border: '1px solid #4ecca3',
-        borderRadius: '4px',
-        padding: '10px',
-        color: '#fff',
-        fontFamily: 'inherit'
-    },
-    previewContainer: {
-        textAlign: 'center',
-        marginTop: '10px'
-    },
-    preview: {
-        maxWidth: '100px',
-        maxHeight: '100px',
-        borderRadius: '5px',
-        border: '1px solid #4ecca3'
+        backgroundColor: Theme.colors.background,
+        border: `1px solid ${Theme.colors.border}`,
+        borderRadius: '12px',
+        padding: '12px 16px',
+        color: Theme.colors.text,
+        fontSize: '1rem',
+        outline: 'none',
+        transition: Theme.transitions.default,
     },
     actions: {
         display: 'flex',
         justifyContent: 'flex-end',
-        gap: '10px',
-        marginTop: '20px'
+        gap: '15px',
+        marginTop: '10px'
     },
     cancelBtn: {
+        flex: 1,
         backgroundColor: 'transparent',
-        border: '1px solid #e94560',
-        color: '#e94560',
-        padding: '10px 20px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontWeight: 'bold'
+        border: `1px solid ${Theme.colors.border}`,
+        color: Theme.colors.textMuted,
+        padding: '14px',
+        borderRadius: '12px',
+        fontSize: '1rem',
     },
     submitBtn: {
-        backgroundColor: '#4ecca3',
+        flex: 2,
+        backgroundColor: Theme.colors.primary,
+        color: '#fff',
         border: 'none',
-        color: '#1a1a2e',
-        padding: '10px 20px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontWeight: 'bold'
+        padding: '14px',
+        borderRadius: '12px',
+        fontSize: '1rem',
+        boxShadow: Theme.shadows.glow,
     }
 };

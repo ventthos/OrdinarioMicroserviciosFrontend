@@ -1,24 +1,25 @@
 export const Theme = {
     colors: {
-        background: '#0a0a0c',
-        surface: '#16161a',
-        surfaceLight: '#1f1f23',
-        primary: '#7c3aed', // Purple neon
-        primaryHover: '#8b5cf6',
-        secondary: '#ec4899', // Pink neon
-        accent: '#06b6d4', // Cyan neon
-        success: '#10b981',
-        error: '#ef4444',
-        warning: '#f59e0b',
-        text: '#f8fafc',
-        textMuted: '#94a3b8',
-        border: 'rgba(124, 58, 237, 0.2)',
-        borderHover: 'rgba(124, 58, 237, 0.4)',
+        background: '#050505', // Deeper black
+        surface: '#0f0f12',
+        surfaceLight: '#1a1a1e',
+        primary: '#bc13fe', // Vibrant Neon Purple
+        primaryHover: '#d670ff',
+        secondary: '#ff0055', // Electric Pink
+        accent: '#00f2ff', // Cyber Cyan
+        success: '#10b981', // Sophisticated Emerald Green (Muted)
+        error: '#ff3131', // Neon Red
+        warning: '#ffcc00',
+        text: '#ffffff',
+        textMuted: '#a0a0b8',
+        border: 'rgba(188, 19, 254, 0.3)',
+        borderHover: 'rgba(188, 19, 254, 0.6)',
     },
     shadows: {
-        glow: '0 0 20px rgba(124, 58, 237, 0.3)',
-        glowSecondary: '0 0 20px rgba(236, 72, 153, 0.3)',
-        card: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        glow: '0 0 15px rgba(188, 19, 254, 0.5), 0 0 30px rgba(188, 19, 254, 0.2)',
+        glowSecondary: '0 0 15px rgba(255, 0, 85, 0.5), 0 0 30px rgba(255, 0, 85, 0.2)',
+        glowAccent: '0 0 15px rgba(0, 242, 255, 0.5), 0 0 30px rgba(0, 242, 255, 0.2)',
+        card: '0 8px 32px 0 rgba(0, 0, 0, 0.8)',
     },
     transitions: {
         default: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

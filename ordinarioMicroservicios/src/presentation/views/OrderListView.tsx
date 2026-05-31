@@ -153,20 +153,21 @@ const styles: { [key: string]: React.CSSProperties } = {
     tableWrapper: { overflowX: 'auto' },
     table: { width: '100%', borderCollapse: 'collapse' },
     th: {
-        textAlign: 'left',
+        textAlign: 'center',
         padding: '20px',
         backgroundColor: 'rgba(124, 58, 237, 0.05)',
         color: Theme.colors.primary,
         fontSize: '0.85rem',
         fontWeight: 700,
         textTransform: 'uppercase',
+        letterSpacing: '1px',
         borderBottom: `1px solid ${Theme.colors.border}`,
     },
     tr: {
         borderBottom: `1px solid ${Theme.colors.border}`,
         transition: Theme.transitions.default,
     },
-    td: { padding: '20px', fontSize: '0.95rem', color: Theme.colors.text },
+    td: { padding: '20px', fontSize: '0.95rem', color: Theme.colors.text, textAlign: 'center' },
     orderCodeBadge: {
         backgroundColor: 'rgba(6, 182, 212, 0.1)',
         color: Theme.colors.accent,

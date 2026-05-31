@@ -17,6 +17,7 @@ export const useProductViewModel = () => {
         message: string;
         type: 'danger' | 'success' | 'info';
         onConfirm: () => void;
+        hideCancel?: boolean;
     }>({
         isOpen: false,
         title: '',
@@ -30,8 +31,14 @@ export const useProductViewModel = () => {
     const deleteProductUseCase = useMemo(() => new DeleteProductUseCase(productRepository), [productRepository]);
     const createProductUseCase = useMemo(() => new CreateProductUseCase(productRepository), [productRepository]);
 
-    const showModal = useCallback((title: string, message: string, type: 'danger' | 'success' | 'info', onConfirm: () => void = () => closeModal()) => {
-        setModalConfig({ isOpen: true, title, message, type, onConfirm });
+    const showModal = useCallback((
+        title: string, 
+        message: string, 
+        type: 'danger' | 'success' | 'info', 
+        onConfirm: () => void = () => closeModal(),
+        hideCancel: boolean = false
+    ) => {
+        setModalConfig({ isOpen: true, title, message, type, onConfirm, hideCancel });
     }, []);
 
     const closeModal = useCallback(() => {
@@ -58,15 +65,18 @@ export const useProductViewModel = () => {
             "¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.",
             "danger",
             async () => {
+                setLoading(true); // Show loading while deleting
                 closeModal();
                 try {
                     await deleteProductUseCase.execute(id);
                     setProducts(prev => prev.filter(p => p.id !== id));
-                    showModal("ÉXITO", "Producto eliminado correctamente.", "success");
+                    showModal("ÉXITO", "Producto eliminado correctamente.", "success", () => closeModal(), true);
                 } catch (err: any) {
                     const errorMessage = err.message || "Error al eliminar el producto";
-                    showModal("ERROR", errorMessage, "danger");
+                    showModal("ERROR", errorMessage, "danger", () => closeModal(), true);
                     console.error(err);
+                } finally {
+                    setLoading(false);
                 }
             }
         );
@@ -76,15 +86,15 @@ export const useProductViewModel = () => {
         try {
             const newProduct = await createProductUseCase.execute(product);
             setProducts(prev => [...prev, newProduct]);
-            showModal("ÉXITO", "¡Producto creado correctamente!", "success");
+            showModal("ÉXITO", "¡Producto creado correctamente!", "success", () => closeModal(), true);
             return true;
         } catch (err: any) {
             const errorMessage = err.message || "Error al crear el producto";
-            showModal("ERROR", errorMessage, "danger");
+            showModal("ERROR", errorMessage, "danger", () => closeModal(), true);
             console.error(err);
             return false;
         }
-    }, [showModal, createProductUseCase]);
+    }, [showModal, closeModal, createProductUseCase]);
 
     return {
         products,
