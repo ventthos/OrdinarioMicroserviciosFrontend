@@ -2,15 +2,46 @@ import React, { useState } from 'react';
 import './App.css';
 import { ProductListView } from './presentation/views/ProductListView';
 import { OrderSearchView } from './presentation/views/OrderSearchView';
+import { OrderListView } from './presentation/views/OrderListView';
+import { OrderDetailView } from './presentation/views/OrderDetailView';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'inventory' | 'orders'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'search'>('inventory');
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+
+  const handleViewDetail = (id: string) => {
+    setSelectedOrderId(id);
+    setShowDetail(true);
+  };
+
+  const handleBackToList = () => {
+    setShowDetail(false);
+    setSelectedOrderId(null);
+  };
+
+  const renderContent = () => {
+    if (showDetail && selectedOrderId) {
+      return <OrderDetailView orderId={selectedOrderId} onBack={handleBackToList} />;
+    }
+
+    switch (activeTab) {
+      case 'inventory':
+        return <ProductListView />;
+      case 'orders':
+        return <OrderListView onViewDetail={handleViewDetail} />;
+      case 'search':
+        return <OrderSearchView />;
+      default:
+        return <ProductListView />;
+    }
+  };
 
   return (
     <div className="App">
       <nav style={styles.nav}>
         <button 
-          onClick={() => setActiveTab('inventory')}
+          onClick={() => { setActiveTab('inventory'); setShowDetail(false); }}
           style={{ 
             ...styles.navBtn, 
             borderBottom: activeTab === 'inventory' ? '3px solid #4ecca3' : 'none',
@@ -20,7 +51,7 @@ function App() {
           INVENTARIO
         </button>
         <button 
-          onClick={() => setActiveTab('orders')}
+          onClick={() => { setActiveTab('orders'); setShowDetail(false); }}
           style={{ 
             ...styles.navBtn, 
             borderBottom: activeTab === 'orders' ? '3px solid #4ecca3' : 'none',
@@ -29,9 +60,19 @@ function App() {
         >
           ÓRDENES
         </button>
+        <button 
+          onClick={() => { setActiveTab('search'); setShowDetail(false); }}
+          style={{ 
+            ...styles.navBtn, 
+            borderBottom: activeTab === 'search' ? '3px solid #4ecca3' : 'none',
+            color: activeTab === 'search' ? '#4ecca3' : '#fff'
+          }}
+        >
+          BÚSQUEDA
+        </button>
       </nav>
 
-      {activeTab === 'inventory' ? <ProductListView /> : <OrderSearchView />}
+      {renderContent()}
     </div>
   );
 }

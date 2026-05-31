@@ -15,4 +15,33 @@ export class ApiOrderRepository implements OrderRepository {
 
         return result.data;
     }
+
+    async getAllOrders(): Promise<Order[]> {
+        const response = await fetch(this.apiUrl);
+        const result: ApiResponse<Order[]> = await response.json();
+
+        if (result.status === "ERROR") {
+            throw new Error(result.message || "No se pudieron recuperar las órdenes");
+        }
+
+        return result.data || [];
+    }
+
+    async createOrder(order: Omit<Order, 'id' | 'user' | 'debt'> & { userId: string }): Promise<Order> {
+        const response = await fetch(this.apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+        });
+
+        const result: ApiResponse<Order> = await response.json();
+
+        if (result.status === "ERROR") {
+            throw new Error(result.message || "Error al crear la orden");
+        }
+
+        return result.data;
+    }
 }
