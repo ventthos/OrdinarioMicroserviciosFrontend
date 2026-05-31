@@ -5,39 +5,44 @@ import type { ApiResponse } from "../dto/ProductDTO";
 export class ApiPaymentRepository implements PaymentRepository {
     private readonly apiUrl = "http://localhost:8085/pagos";
 
-    async getPaymentsByOrderId(orderId: string): Promise<Payment[]> {
-        const response = await fetch(`${this.apiUrl}/orden/${orderId}`);
-        const result: ApiResponse<Payment[] | null> = await response.json();
-
-        if (result.status === "ERROR") {
-            if (result.message.includes("No se encontraron pagos")) {
-                return [];
-            }
-            throw new Error(result.message || "Error al recuperar los pagos");
+    private async handleResponse<T>(response: Response): Promise<T> {
+        if (!response.ok) {
+            let errorMsg = `Error del servidor: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+            } catch { /* use default status */ }
+            throw new Error(errorMsg);
         }
 
-        return result.data || [];
+        const result: ApiResponse<T> = await response.json();
+
+        if (result.status === "ERROR") {
+            // Special case for getPayments where "no payments" is reported as error
+            if (result.message?.includes("No se encontraron pagos")) {
+                return [] as unknown as T;
+            }
+            throw new Error(result.message || "Error en el servidor de pagos");
+        }
+
+        return result.data as T;
+    }
+
+    async getPaymentsByOrderId(orderId: string): Promise<Payment[]> {
+        const response = await fetch(`${this.apiUrl}/orden/${orderId}`);
+        const data = await this.handleResponse<Payment[] | null>(response);
+        return data || [];
     }
 
     async processPayment(paymentData: { ordenId: string; amount: number; paymentMethod: string; }): Promise<Payment> {
         const response = await fetch(`${this.apiUrl}/procesar`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(paymentData)
         });
 
-        const result: ApiResponse<Payment | null> = await response.json();
-
-        if (result.status === "ERROR") {
-            throw new Error(result.message || "Error al procesar el pago");
-        }
-
-        if (!result.data) {
-            throw new Error("Respuesta del servidor vacía");
-        }
-
-        return result.data;
+        const data = await this.handleResponse<Payment>(response);
+        if (!data) throw new Error("El servidor no devolvió los datos del pago procesado");
+        return data;
     }
 }

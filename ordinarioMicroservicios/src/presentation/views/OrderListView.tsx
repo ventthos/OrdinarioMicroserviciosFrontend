@@ -95,7 +95,7 @@ export const OrderListView: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {orders.map((order) => (
+                                {orders.filter(o => !!o && o.orderCode).map((order) => (
                                     <tr key={order.id} style={styles.tr}>
                                         <td style={styles.td}>
                                             <span style={styles.orderCodeBadge}>{order.orderCode}</span>
