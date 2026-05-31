@@ -4,9 +4,10 @@ import { ProductListView } from './presentation/views/ProductListView';
 import { OrderSearchView } from './presentation/views/OrderSearchView';
 import { OrderListView } from './presentation/views/OrderListView';
 import { OrderDetailView } from './presentation/views/OrderDetailView';
+import { ShipmentListView } from './presentation/views/ShipmentListView';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'search'>('inventory');
+  const [activeTab, setActiveTab] = useState<'inventory' | 'orders' | 'search' | 'shipments'>('inventory');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [showDetail, setShowDetail] = useState(false);
 
@@ -32,6 +33,8 @@ function App() {
         return <OrderListView onViewDetail={handleViewDetail} />;
       case 'search':
         return <OrderSearchView />;
+      case 'shipments':
+        return <ShipmentListView onViewDetail={handleViewDetail} />;
       default:
         return <ProductListView />;
     }
@@ -69,6 +72,16 @@ function App() {
           }}
         >
           BÚSQUEDA
+        </button>
+        <button 
+          onClick={() => { setActiveTab('shipments'); setShowDetail(false); }}
+          style={{ 
+            ...styles.navBtn, 
+            borderBottom: activeTab === 'shipments' ? '3px solid #4ecca3' : 'none',
+            color: activeTab === 'shipments' ? '#4ecca3' : '#fff'
+          }}
+        >
+          ENVÍOS
         </button>
       </nav>
 
