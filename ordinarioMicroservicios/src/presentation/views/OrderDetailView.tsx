@@ -7,7 +7,7 @@ interface OrderDetailViewProps {
 }
 
 export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBack }) => {
-    const { order, loading, error, searchOrder } = useOrderViewModel();
+    const { order, payments, loading, loadingPayments, error, searchOrder } = useOrderViewModel();
 
     useEffect(() => {
         if (orderId) {
@@ -83,6 +83,47 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBac
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div style={{ ...styles.productsSection, marginTop: '40px' }}>
+                            <h3 style={styles.subTitle}>PAGOS REALIZADOS</h3>
+                            {loadingPayments ? (
+                                <div style={{ color: '#4ecca3', padding: '10px' }}>Cargando pagos...</div>
+                            ) : payments.length === 0 ? (
+                                <p style={{ color: '#fff', opacity: 0.7 }}>No hay pagos registrados para esta orden.</p>
+                            ) : (
+                                <table style={styles.table}>
+                                    <thead>
+                                        <tr>
+                                            <th style={styles.th}>ID PAGO</th>
+                                            <th style={styles.th}>MÉTODO</th>
+                                            <th style={styles.th}>ESTADO</th>
+                                            <th style={styles.th}>FECHA</th>
+                                            <th style={styles.th}>MONTO</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {payments.map((p) => (
+                                            <tr key={p.id} style={styles.tr}>
+                                                <td style={styles.td}>{p.id}</td>
+                                                <td style={styles.td}>{p.paymentMethod}</td>
+                                                <td style={styles.td}>
+                                                    <span style={{
+                                                        color: p.status === 'PROCESSED' || p.status === 'COMPLETED' ? '#4ecca3' : '#e94560',
+                                                        fontWeight: 'bold'
+                                                    }}>
+                                                        {p.status}
+                                                    </span>
+                                                </td>
+                                                <td style={styles.td}>{new Date(p.transactionDate).toLocaleString()}</td>
+                                                <td style={{ ...styles.td, color: '#4ecca3', fontWeight: 'bold' }}>
+                                                    ${p.amount.toFixed(2)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
                     </div>
                 )}
