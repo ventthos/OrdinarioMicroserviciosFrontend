@@ -14,6 +14,13 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
 
+    const handleClose = () => {
+        setAmount('');
+        setPaymentMethod('TARJETA_CREDITO');
+        setMessage(null);
+        onClose();
+    };
+
     if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -30,17 +37,19 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
         try {
             const success = await onSubmit(numericAmount, paymentMethod);
             if (success) {
-                setMessage({ text: 'Pago registrado exitosamente', type: 'success' });
+                setMessage({ text: 'PAGO REGISTRADO EXITOSAMENTE', type: 'success' });
                 setTimeout(() => {
                     onClose();
                     setAmount('');
                     setMessage(null);
                 }, 1500);
             } else {
-                setMessage({ text: 'No se pudo registrar el pago', type: 'error' });
+                // If onSubmit returns false without throwing, it's a generic failure
+                setMessage({ text: 'No se pudo procesar el cobro en este momento.', type: 'error' });
             }
         } catch (err: any) {
-            setMessage({ text: err.message || 'Error al procesar el pago', type: 'error' });
+            // Display actual error description from the repository
+            setMessage({ text: err.message || 'Error crítico en la pasarela de pagos.', type: 'error' });
         } finally {
             setIsSubmitting(false);
         }
@@ -99,7 +108,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
                     <div style={styles.actions}>
                         <button 
                             type="button" 
-                            onClick={onClose} 
+                            onClick={handleClose} 
                             style={styles.cancelButton}
                             disabled={isSubmitting}
                         >

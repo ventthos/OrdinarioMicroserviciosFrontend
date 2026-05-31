@@ -28,6 +28,18 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
+    const handleClose = () => {
+        setFormData({
+            orderCode: `ORD-${Math.floor(Math.random() * 1000)}-${Date.now().toString().slice(-4)}`,
+            orderDate: new Date().toISOString().split('T')[0],
+            totalAmount: '0.00',
+            status: 'PENDING',
+            userId: ''
+        });
+        setProducts([]);
+        onClose();
+    };
+
     if (!isOpen) return null;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -214,7 +226,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
                         </div>
 
                         <div style={styles.actions}>
-                            <button type="button" onClick={onClose} style={styles.cancelBtn}>
+                            <button type="button" onClick={handleClose} style={styles.cancelBtn}>
                                 Cancelar
                             </button>
                             <button type="submit" disabled={submitting} style={styles.submitBtn}>

@@ -35,17 +35,29 @@ export const OrderListView: React.FC = () => {
     }, [fetchAllOrders]);
 
     const handleCreateOrder = async (orderData: any) => {
-        const success = await createOrder(orderData);
-        if (success) {
+        try {
+            const success = await createOrder(orderData);
+            if (success) {
+                setNotification({
+                    isOpen: true,
+                    title: 'ORDEN REGISTRADA',
+                    message: 'La orden ha sido guardada exitosamente en el sistema.',
+                    type: 'success'
+                });
+                setIsCreateModalOpen(false);
+                return true;
+            }
+            return false;
+        } catch (err: any) {
+            const errorMsg = err.message || 'Error desconocido al procesar la orden.';
             setNotification({
                 isOpen: true,
-                title: 'ORDEN REGISTRADA',
-                message: 'La orden ha sido guardada exitosamente en el sistema.',
-                type: 'success'
+                title: 'ERROR DE REGISTRO',
+                message: errorMsg,
+                type: 'danger'
             });
-            setIsCreateModalOpen(false);
+            return false;
         }
-        return success;
     };
 
     return (

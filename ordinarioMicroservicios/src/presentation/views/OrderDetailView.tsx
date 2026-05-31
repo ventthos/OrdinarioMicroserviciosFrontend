@@ -14,15 +14,19 @@ export const OrderDetailView: React.FC = () => {
         if (id) {
             searchOrder(id);
         }
-    }, [id]);
+    }, [id, searchOrder]);
 
     const handleProcessPayment = async (amount: number, paymentMethod: string) => {
         if (!order) return false;
-        return await processPayment({
+        const success = await processPayment({
             ordenId: order.id,
             amount,
             paymentMethod
         });
+        
+        // Note: processPayment already calls searchOrder internally on success, 
+        // which will update both the order (debt) and the payments list.
+        return success;
     };
 
     if (loading && !order) {

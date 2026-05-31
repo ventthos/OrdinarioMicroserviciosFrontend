@@ -16,6 +16,7 @@ export const useOrderViewModel = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [loadingPayments, setLoadingPayments] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [createError, setCreateError] = useState<string | null>(null);
 
     const orderRepository = useMemo(() => new ApiOrderRepository(), []);
     const paymentRepository = useMemo(() => new ApiPaymentRepository(), []);
@@ -96,16 +97,17 @@ export const useOrderViewModel = () => {
 
     const createOrder = useCallback(async (newOrder: Omit<Order, 'id' | 'user' | 'debt'> & { userId: string }): Promise<boolean> => {
         setLoading(true);
-        setError(null);
+        setCreateError(null);
 
         try {
             const createdOrder = await createOrderUseCase.execute(newOrder);
             setOrders(prev => [createdOrder, ...prev]);
             return true;
         } catch (err: any) {
-            setError(err.message || "Error al crear la orden");
+            const errorMsg = err.message || "Error al crear la orden";
+            setCreateError(errorMsg);
             console.error(err);
-            return false;
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -118,6 +120,7 @@ export const useOrderViewModel = () => {
         loading,
         loadingPayments,
         error,
+        createError,
         searchOrder,
         fetchAllOrders,
         createOrder,
