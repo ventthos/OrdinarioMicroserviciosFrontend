@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useOrderViewModel } from '../hooks/useOrderViewModel';
 import { PaymentFormModal } from '../components/PaymentFormModal';
+import { Theme } from '../theme';
 
-interface OrderDetailViewProps {
-    orderId: string;
-    onBack: () => void;
-}
-
-export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBack }) => {
+export const OrderDetailView: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const { order, payments, loading, loadingPayments, error, searchOrder, processPayment } = useOrderViewModel();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     useEffect(() => {
-        if (orderId) {
-            searchOrder(orderId);
+        if (id) {
+            searchOrder(id);
         }
-    }, [orderId]);
+    }, [id]);
 
     const handleProcessPayment = async (amount: number, paymentMethod: string) => {
         if (!order) return false;
@@ -26,76 +25,99 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBac
         });
     };
 
+    if (loading && !order) {
+        return (
+            <div style={styles.stateContainer}>
+                <div style={styles.loader}></div>
+                <p>Cargando expediente de la orden...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={styles.stateContainer}>
+                <div style={styles.errorIcon}>⚠️</div>
+                <p style={styles.errorText}>{error}</p>
+                <button onClick={() => navigate('/orders')} style={styles.backLink}>Regresar al listado</button>
+            </div>
+        );
+    }
+
     return (
-        <div style={styles.content}>
-            <header style={styles.header}>
-                <button onClick={onBack} style={styles.backButton}>← VOLVER</button>
-                <h1 style={styles.title}>DETALLE DE LA ORDEN</h1>
+        <div style={styles.viewContainer}>
+            <header style={styles.viewHeader}>
+                <button onClick={() => navigate(-1)} style={styles.backButton}>
+                    ← Volver
+                </button>
+                <h2 style={styles.title}>Expediente de Orden</h2>
             </header>
 
-            <main style={styles.resultSection}>
-                {loading && <div style={styles.loadingBox}>CARGANDO DETALLE...</div>}
-                {error && <div style={styles.errorBox}>{error}</div>}
-                
-                {order && (
-                    <div style={styles.orderCard}>
-                        <div style={styles.orderHeader}>
-                            <h2 style={styles.orderCode}>{order.orderCode}</h2>
+            {order && (
+                <div style={styles.contentGrid}>
+                    {/* General Info Card */}
+                    <div style={styles.mainCard}>
+                        <div style={styles.cardHeader}>
+                            <h3 style={styles.orderCode}>{order.orderCode}</h3>
                             <span style={{
-                                ...styles.orderStatus,
-                                backgroundColor: order.status === 'COMPLETED' || order.status === 'Pagado' || order.status === 'Pagada' ? '#4ecca3' : '#e94560'
+                                ...styles.statusBadge,
+                                backgroundColor: order.status === 'COMPLETED' || order.status === 'Pagado' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                color: order.status === 'COMPLETED' || order.status === 'Pagado' ? Theme.colors.success : Theme.colors.error,
                             }}>
                                 {order.status}
                             </span>
                         </div>
-                        
-                        <div style={styles.orderGrid}>
-                            <div style={styles.infoGroup}>
-                                <label style={styles.label}>ID DE ORDEN</label>
-                                <p style={styles.value}>{order.id}</p>
+
+                        <div style={styles.infoGrid}>
+                            <div style={styles.infoItem}>
+                                <label style={styles.infoLabel}>ID Único</label>
+                                <p style={styles.infoValue}>{order.id}</p>
                             </div>
-                            <div style={styles.infoGroup}>
-                                <label style={styles.label}>FECHA</label>
-                                <p style={styles.value}>{order.orderDate}</p>
+                            <div style={styles.infoItem}>
+                                <label style={styles.infoLabel}>Fecha de Emisión</label>
+                                <p style={styles.infoValue}>{order.orderDate}</p>
                             </div>
-                            <div style={styles.infoGroup}>
-                                <label style={styles.label}>USUARIO</label>
-                                <p style={styles.value}>{order.user}</p>
+                            <div style={styles.infoItem}>
+                                <label style={styles.infoLabel}>Operador/Usuario</label>
+                                <p style={styles.infoValue}>{order.user}</p>
                             </div>
-                            <div style={styles.infoGroup}>
-                                <label style={styles.label}>MONTO TOTAL</label>
-                                <p style={{ ...styles.value, color: '#4ecca3', fontSize: '1.5rem' }}>
+                            <div style={styles.infoItem}>
+                                <label style={styles.infoLabel}>Total de la Transacción</label>
+                                <p style={{ ...styles.infoValue, color: Theme.colors.primary, fontSize: '1.5rem', fontWeight: 700 }}>
                                     ${order.totalAmount.toFixed(2)}
                                 </p>
                             </div>
                             {order.debt !== undefined && (
-                                <div style={styles.infoGroup}>
-                                    <label style={styles.label}>DEUDA PENDIENTE</label>
-                                    <p style={{ ...styles.value, color: '#e94560', fontSize: '1.5rem' }}>
+                                <div style={styles.infoItem}>
+                                    <label style={styles.infoLabel}>Saldo Deudor</label>
+                                    <p style={{ ...styles.infoValue, color: Theme.colors.error, fontSize: '1.5rem', fontWeight: 700 }}>
                                         ${order.debt.toFixed(2)}
                                     </p>
                                 </div>
                             )}
                         </div>
+                    </div>
 
-                        <div style={styles.productsSection}>
-                            <h3 style={styles.subTitle}>PRODUCTOS</h3>
+                    {/* Products Section */}
+                    <div style={styles.sectionCard}>
+                        <h3 style={styles.sectionTitle}>Productos Vinculados</h3>
+                        <div style={styles.tableWrapper}>
                             <table style={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th style={styles.th}>PRODUCTO ID</th>
-                                        <th style={styles.th}>CANTIDAD</th>
-                                        <th style={styles.th}>PRECIO UNITARIO</th>
-                                        <th style={styles.th}>SUBTOTAL</th>
+                                        <th style={styles.th}>SKU / ID</th>
+                                        <th style={styles.th}>Cant.</th>
+                                        <th style={styles.th}>Precio Unit.</th>
+                                        <th style={styles.th}>Subtotal</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {order.products.map((p, idx) => (
                                         <tr key={idx} style={styles.tr}>
-                                            <td style={styles.td}>{p.productId}</td>
+                                            <td style={styles.td}><code style={styles.skuText}>{p.productId}</code></td>
                                             <td style={styles.td}>{p.quantity}</td>
                                             <td style={styles.td}>${p.price.toFixed(2)}</td>
-                                            <td style={{ ...styles.td, color: '#4ecca3' }}>
+                                            <td style={{ ...styles.td, color: Theme.colors.accent, fontWeight: 600 }}>
                                                 ${(p.quantity * p.price).toFixed(2)}
                                             </td>
                                         </tr>
@@ -103,60 +125,60 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBac
                                 </tbody>
                             </table>
                         </div>
+                    </div>
 
-                        <div style={{ ...styles.productsSection, marginTop: '40px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                <h3 style={{ ...styles.subTitle, marginBottom: 0, borderBottom: 'none' }}>PAGOS REALIZADOS</h3>
-                                <button 
-                                    onClick={() => setIsPaymentModalOpen(true)}
-                                    style={styles.addPaymentButton}
-                                >
-                                    + AGREGAR PAGO
-                                </button>
-                            </div>
-                            <div style={{ height: '1px', backgroundColor: 'rgba(78, 204, 163, 0.3)', marginBottom: '20px' }}></div>
-                            
-                            {loadingPayments ? (
-                                <div style={{ color: '#4ecca3', padding: '10px' }}>Cargando pagos...</div>
-                            ) : payments.length === 0 ? (
-                                <p style={{ color: '#fff', opacity: 0.7 }}>No hay pagos registrados para esta orden.</p>
-                            ) : (
+                    {/* Payments Section */}
+                    <div style={styles.sectionCard}>
+                        <div style={styles.sectionHeader}>
+                            <h3 style={styles.sectionTitle}>Historial de Cobros</h3>
+                            <button 
+                                onClick={() => setIsPaymentModalOpen(true)}
+                                style={styles.addPaymentButton}
+                            >
+                                + Registrar Pago
+                            </button>
+                        </div>
+                        
+                        {loadingPayments ? (
+                            <div style={styles.miniLoader}>Sincronizando pagos...</div>
+                        ) : payments.length === 0 ? (
+                            <p style={styles.emptyText}>No se han detectado abonos para esta orden.</p>
+                        ) : (
+                            <div style={styles.tableWrapper}>
                                 <table style={styles.table}>
                                     <thead>
                                         <tr>
-                                            <th style={styles.th}>ID PAGO</th>
-                                            <th style={styles.th}>MÉTODO</th>
-                                            <th style={styles.th}>ESTADO</th>
-                                            <th style={styles.th}>FECHA</th>
-                                            <th style={styles.th}>MONTO</th>
+                                            <th style={styles.th}>ID Pago</th>
+                                            <th style={styles.th}>Método</th>
+                                            <th style={styles.th}>Estado</th>
+                                            <th style={styles.th}>Monto</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {payments.map((p) => (
                                             <tr key={p.id} style={styles.tr}>
-                                                <td style={styles.td}>{p.id}</td>
+                                                <td style={styles.td}><span style={styles.smallId}>#{p.id.slice(-6)}</span></td>
                                                 <td style={styles.td}>{p.paymentMethod}</td>
                                                 <td style={styles.td}>
                                                     <span style={{
-                                                        color: p.status === 'PROCESSED' || p.status === 'COMPLETED' ? '#4ecca3' : '#e94560',
-                                                        fontWeight: 'bold'
+                                                        ...styles.statusBadgeSmall,
+                                                        color: p.status === 'PROCESSED' || p.status === 'COMPLETED' ? Theme.colors.success : Theme.colors.error
                                                     }}>
-                                                        {p.status}
+                                                        ● {p.status}
                                                     </span>
                                                 </td>
-                                                <td style={styles.td}>{new Date(p.transactionDate).toLocaleString()}</td>
-                                                <td style={{ ...styles.td, color: '#4ecca3', fontWeight: 'bold' }}>
+                                                <td style={{ ...styles.td, color: Theme.colors.success, fontWeight: 700 }}>
                                                     ${p.amount.toFixed(2)}
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
-                )}
-            </main>
+                </div>
+            )}
 
             {order && (
                 <PaymentFormModal
@@ -171,139 +193,43 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBac
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
-    content: {
-        padding: '20px',
-        maxWidth: '1000px',
-        margin: '0 auto'
-    },
-    header: {
-        borderBottom: '4px solid #e94560',
-        marginBottom: '40px',
-        paddingBottom: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative'
-    },
+    viewContainer: { animation: 'fadeIn 0.5s ease-out' },
+    viewHeader: { display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' },
     backButton: {
-        position: 'absolute',
-        left: 0,
         backgroundColor: 'transparent',
-        border: '1px solid #e94560',
-        color: '#e94560',
-        padding: '5px 15px',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontWeight: 'bold'
+        border: `1px solid ${Theme.colors.border}`,
+        color: Theme.colors.textMuted,
+        padding: '8px 16px',
+        borderRadius: '8px',
     },
-    title: {
-        margin: 0,
-        color: '#4ecca3',
-        fontSize: '2rem'
-    },
-    resultSection: {
-        minHeight: '200px'
-    },
-    loadingBox: {
-        color: '#4ecca3',
-        textAlign: 'center',
-        padding: '40px',
-        fontSize: '1.5rem'
-    },
-    errorBox: {
-        backgroundColor: 'rgba(233, 69, 96, 0.2)',
-        border: '1px solid #e94560',
-        color: '#fff',
-        padding: '20px',
-        borderRadius: '5px',
-        textAlign: 'center',
-        fontSize: '1.1rem'
-    },
-    orderCard: {
-        backgroundColor: 'rgba(26, 26, 46, 0.95)',
-        border: '1px solid #4ecca3',
-        borderRadius: '10px',
+    title: { fontSize: '1.8rem', margin: 0 },
+    contentGrid: { display: 'flex', flexDirection: 'column', gap: '30px' },
+    mainCard: {
+        backgroundColor: Theme.colors.surface,
+        borderRadius: '16px',
         padding: '30px',
-        boxShadow: '0 0 20px rgba(0,0,0,0.5)'
+        border: `1px solid ${Theme.colors.border}`,
     },
-    orderHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '30px',
-        borderBottom: '1px solid rgba(78, 204, 163, 0.3)',
-        paddingBottom: '15px'
-    },
-    orderCode: {
-        margin: 0,
-        color: '#4ecca3',
-        fontSize: '1.8rem'
-    },
-    orderStatus: {
-        color: '#fff',
-        padding: '5px 15px',
-        borderRadius: '20px',
-        fontSize: '0.9rem',
-        fontWeight: 'bold'
-    },
-    orderGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '40px'
-    },
-    infoGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '5px'
-    },
-    label: {
-        color: '#e94560',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        textTransform: 'uppercase'
-    },
-    value: {
-        color: '#fff',
-        margin: 0,
-        fontSize: '1.1rem'
-    },
-    productsSection: {
-        marginTop: '30px'
-    },
-    subTitle: {
-        color: '#4ecca3',
-        borderBottom: '1px solid rgba(78, 204, 163, 0.3)',
-        paddingBottom: '10px',
-        marginBottom: '20px'
-    },
-    addPaymentButton: {
-        backgroundColor: '#4ecca3',
-        border: 'none',
-        color: '#1a1a2e',
-        padding: '8px 15px',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        fontSize: '0.9rem'
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        color: '#fff'
-    },
-    th: {
-        textAlign: 'left',
-        padding: '12px',
-        borderBottom: '2px solid #e94560',
-        color: '#4ecca3',
-        fontSize: '0.8rem'
-    },
-    tr: {
-        borderBottom: '1px solid rgba(233, 69, 96, 0.2)'
-    },
-    td: {
-        padding: '12px',
-        fontSize: '0.9rem'
-    }
+    cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', borderBottom: `1px solid ${Theme.colors.border}`, paddingBottom: '15px' },
+    orderCode: { fontSize: '1.5rem', margin: 0, color: Theme.colors.primary },
+    statusBadge: { padding: '6px 15px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 600 },
+    infoGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '25px' },
+    infoItem: { display: 'flex', flexDirection: 'column', gap: '5px' },
+    infoLabel: { fontSize: '0.75rem', color: Theme.colors.textMuted, textTransform: 'uppercase', letterSpacing: '1px' },
+    infoValue: { fontSize: '1.1rem', margin: 0 },
+    sectionCard: { backgroundColor: Theme.colors.surface, borderRadius: '16px', padding: '30px', border: `1px solid ${Theme.colors.border}` },
+    sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+    sectionTitle: { fontSize: '1.2rem', margin: 0, color: Theme.colors.accent },
+    addPaymentButton: { backgroundColor: Theme.colors.primary, color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 600 },
+    tableWrapper: { overflowX: 'auto' },
+    table: { width: '100%', borderCollapse: 'collapse' },
+    th: { textAlign: 'left', padding: '12px', color: Theme.colors.textMuted, fontSize: '0.8rem', borderBottom: `1px solid ${Theme.colors.border}` },
+    tr: { borderBottom: `1px solid rgba(255,255,255,0.05)` },
+    td: { padding: '12px', fontSize: '0.95rem' },
+    skuText: { fontSize: '0.8rem', opacity: 0.7 },
+    smallId: { fontFamily: 'monospace', opacity: 0.6 },
+    statusBadgeSmall: { fontSize: '0.8rem', fontWeight: 600 },
+    emptyText: { color: Theme.colors.textMuted, textAlign: 'center', padding: '20px' },
+    stateContainer: { padding: '100px', textAlign: 'center' },
+    loader: { width: '40px', height: '40px', border: '3px solid #333', borderTopColor: Theme.colors.primary, borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' },
 };

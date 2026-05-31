@@ -1,230 +1,129 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { useProductViewModel } from '../hooks/useProductViewModel';
-import { ProductFormModal } from '../components/ProductFormModal';
-import { ConfirmationModal } from '../components/ConfirmationModal';
+import { Theme } from '../theme';
 
 export const ProductListView: React.FC = () => {
-    const { 
-        products, 
-        loading, 
-        error, 
-        deleteProduct, 
-        createProduct, 
-        modalConfig, 
-        closeModal,
-        showNotification 
-    } = useProductViewModel();
-    const [isFormOpen, setIsFormOpen] = useState(false);
+    const { products, loading, error, refreshProducts } = useProductViewModel();
 
-    if (loading) {
-        return (
-            <div style={styles.container}>
-                <h1 style={styles.loadingText}>CARGANDO SISTEMA...</h1>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div style={styles.container}>
-                <h1 style={styles.errorText}>ERROR DEL SISTEMA: {error}</h1>
-            </div>
-        );
-    }
+    useEffect(() => {
+        refreshProducts();
+    }, [refreshProducts]);
 
     return (
-        <div style={styles.container}>
-            <div style={styles.content}>
-                <header style={styles.header}>
-                    <h1 style={styles.title}>GAME NEXUS POS</h1>
-                    <div style={styles.headerActions}>
-                        <button 
-                            onClick={() => setIsFormOpen(true)}
-                            style={styles.createButton}
-                        >
-                            + NUEVO PRODUCTO
-                        </button>
-                        <div style={styles.stats}>
-                            TOTAL DE ARTÍCULOS: {products.length}
+        <div style={styles.viewContainer}>
+            <header style={styles.viewHeader}>
+                <div>
+                    <h2 style={styles.title}>Inventario de Productos</h2>
+                    <p style={styles.subtitle}>Gestión de stock, precios y catálogo de videojuegos</p>
+                </div>
+            </header>
+
+            {loading ? (
+                <div style={styles.stateContainer}>
+                    <div style={styles.loader}></div>
+                    <p>Consultando catálogo...</p>
+                </div>
+            ) : error ? (
+                <div style={styles.stateContainer}>
+                    <div style={styles.errorIcon}>⚠️</div>
+                    <p style={styles.errorText}>{error}</p>
+                    <button onClick={refreshProducts} style={styles.retryButton}>Reintentar Carga</button>
+                </div>
+            ) : (
+                <div style={styles.grid}>
+                    {products.map((product) => (
+                        <div key={product.id} style={styles.card}>
+                            <div style={styles.imageContainer}>
+                                <img src={product.imageUrl} alt={product.name} style={styles.image} />
+                                <div style={styles.priceTag}>${product.price.toFixed(2)}</div>
+                            </div>
+                            <div style={styles.cardContent}>
+                                <h4 style={styles.productName}>{product.name}</h4>
+                                <p style={styles.productDesc}>{product.description}</p>
+                                <div style={styles.metaInfo}>
+                                    <span style={styles.stockInfo}>
+                                        📦 Stock: <span style={{ color: product.quantity > 0 ? Theme.colors.success : Theme.colors.error }}>
+                                            {product.quantity} unidades
+                                        </span>
+                                    </span>
+                                    <span style={styles.supplierText}>🏷️ {product.supplier}</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </header>
-                <main style={styles.tableContainer}>
-                    {products.length === 0 ? (
-                        <p style={styles.emptyText}>NO SE DETECTÓ INVENTARIO</p>
-                    ) : (
-                        <table style={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th style={styles.th}>IMAGEN</th>
-                                    <th style={styles.th}>NOMBRE</th>
-                                    <th style={styles.th}>DESCRIPCIÓN</th>
-                                    <th style={styles.th}>PRECIO</th>
-                                    <th style={styles.th}>STOCK</th>
-                                    <th style={styles.th}>PROVEEDOR</th>
-                                    <th style={styles.th}>ACCIONES</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {products.map(product => (
-                                    <tr key={product.id} style={styles.tr}>
-                                        <td style={styles.td}>
-                                            <img src={product.imageUrl} alt={product.name} style={styles.productImg} />
-                                        </td>
-                                        <td style={{ ...styles.td, color: '#4ecca3', fontWeight: 'bold' }}>{product.name}</td>
-                                        <td style={styles.td}>{product.description}</td>
-                                        <td style={{ ...styles.td, color: '#e94560' }}>${product.price.toFixed(2)}</td>
-                                        <td style={styles.td}>{product.quantity}</td>
-                                        <td style={styles.td}>{product.supplier}</td>
-                                        <td style={styles.td}>
-                                            <button 
-                                                onClick={() => deleteProduct(product.id)}
-                                                style={styles.deleteButton}
-                                            >
-                                                ELIMINAR
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </main>
-            </div>
-
-            <ProductFormModal 
-                isOpen={isFormOpen} 
-                onClose={() => setIsFormOpen(false)} 
-                onSubmit={createProduct} 
-                onError={(msg) => showNotification("ADVERTENCIA", msg, "info")}
-            />
-
-            <ConfirmationModal 
-                isOpen={modalConfig.isOpen}
-                title={modalConfig.title}
-                message={modalConfig.message}
-                type={modalConfig.type}
-                onConfirm={modalConfig.onConfirm}
-                onCancel={closeModal}
-            />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
-    container: {
-        minHeight: '100vh',
+    viewContainer: { animation: 'fadeIn 0.5s ease-out' },
+    viewHeader: { marginBottom: '30px' },
+    title: { fontSize: '2rem', margin: 0 },
+    subtitle: { color: Theme.colors.textMuted, margin: '5px 0 0 0' },
+    grid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '25px',
+    },
+    card: {
+        backgroundColor: Theme.colors.surface,
+        borderRadius: '16px',
+        border: `1px solid ${Theme.colors.border}`,
+        overflow: 'hidden',
+        transition: Theme.transitions.default,
         position: 'relative',
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     },
-    content: {
-        padding: '20px'
+    imageContainer: {
+        height: '200px',
+        position: 'relative',
+        backgroundColor: '#000',
     },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottom: '4px solid #e94560',
-        marginBottom: '30px',
-        paddingBottom: '10px'
-    },
-    title: {
-        margin: 0,
-        color: '#4ecca3',
-        fontSize: '2.5rem'
-    },
-    headerActions: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px'
-    },
-    createButton: {
-        backgroundColor: '#4ecca3',
-        color: '#1a1a2e',
-        border: 'none',
-        padding: '10px 20px',
-        borderRadius: '5px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        fontSize: '1rem',
-        transition: 'transform 0.2s'
-    },
-    stats: {
-        color: '#fff',
-        fontWeight: 'bold',
-        backgroundColor: '#1a1a2e',
-        padding: '10px 20px',
-        borderRadius: '5px',
-        border: '1px solid #4ecca3'
-    },
-    tableContainer: {
+    image: {
         width: '100%',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        overflowX: 'auto',
-        backgroundColor: 'rgba(26, 26, 46, 0.95)',
-        borderRadius: '10px',
-        padding: '20px',
-        border: '1px solid #4ecca3',
-        boxSizing: 'border-box',
-        boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)'
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        color: '#fff'
-    },
-    th: {
-        textAlign: 'left',
-        padding: '12px',
-        borderBottom: '2px solid #e94560',
-        color: '#4ecca3',
-        textTransform: 'uppercase',
-        letterSpacing: '1px'
-    },
-    tr: {
-        borderBottom: '1px solid rgba(233, 69, 96, 0.3)',
-        transition: 'background-color 0.3s'
-    },
-    td: {
-        padding: '12px',
-        fontSize: '0.95rem'
-    },
-    productImg: {
-        width: '50px',
-        height: '50px',
+        height: '100%',
         objectFit: 'cover',
-        borderRadius: '5px',
-        border: '1px solid #4ecca3'
+        opacity: 0.8,
     },
-    deleteButton: {
-        backgroundColor: '#e94560',
-        color: 'white',
-        border: 'none',
-        padding: '8px 15px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        transition: 'transform 0.2s',
-        fontSize: '0.8rem'
-    },
-    loadingText: {
-        color: '#4ecca3',
-        textAlign: 'center',
-        paddingTop: '20%',
-        position: 'relative',
-        zIndex: 2
-    },
-    errorText: {
-        color: '#e94560',
-        textAlign: 'center',
-        paddingTop: '20%',
-        position: 'relative',
-        zIndex: 2
-    },
-    emptyText: {
+    priceTag: {
+        position: 'absolute',
+        top: '15px',
+        right: '15px',
+        backgroundColor: Theme.colors.primary,
         color: '#fff',
-        fontSize: '1.5rem',
-        textAlign: 'center'
-    }
+        padding: '5px 12px',
+        borderRadius: '8px',
+        fontWeight: 700,
+        boxShadow: Theme.shadows.glow,
+    },
+    cardContent: {
+        padding: '20px',
+    },
+    productName: {
+        margin: '0 0 10px 0',
+        fontSize: '1.2rem',
+        color: Theme.colors.text,
+    },
+    productDesc: {
+        fontSize: '0.9rem',
+        color: Theme.colors.textMuted,
+        margin: '0 0 20px 0',
+        lineHeight: '1.4',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+    },
+    metaInfo: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        paddingTop: '15px',
+        borderTop: `1px solid ${Theme.colors.border}`,
+    },
+    stockInfo: { fontSize: '0.85rem', fontWeight: 600 },
+    supplierText: { fontSize: '0.8rem', color: Theme.colors.textMuted },
+    stateContainer: { padding: '100px', textAlign: 'center' },
+    loader: { width: '40px', height: '40px', border: '3px solid #333', borderTopColor: Theme.colors.primary, borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' },
 };

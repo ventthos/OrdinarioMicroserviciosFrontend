@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Theme } from '../theme';
 
 interface PaymentFormModalProps {
     isOpen: boolean;
@@ -48,42 +49,48 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
-                <h2 style={styles.title}>REGISTRAR PAGO</h2>
-                <p style={styles.orderId}>Orden ID: {orderId}</p>
+                <div style={styles.header}>
+                    <h2 style={styles.title}>Registrar Cobro</h2>
+                    <p style={styles.orderId}>Expediente: {orderId}</p>
+                </div>
 
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>MONTO</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            style={styles.input}
-                            placeholder="0.00"
-                            required
-                        />
+                        <label style={styles.label}>Importe a Liquidar</label>
+                        <div style={styles.inputWrapper}>
+                            <span style={styles.currencyPrefix}>$</span>
+                            <input
+                                type="number"
+                                step="0.01"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                style={styles.input}
+                                placeholder="0.00"
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div style={styles.inputGroup}>
-                        <label style={styles.label}>MÉTODO DE PAGO</label>
+                        <label style={styles.label}>Pasarela / Método</label>
                         <select
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value)}
                             style={styles.select}
                         >
-                            <option value="TARJETA_CREDITO">TARJETA DE CRÉDITO</option>
-                            <option value="TARJETA_DEBITO">TARJETA DE DÉBITO</option>
-                            <option value="EFECTIVO">EFECTIVO</option>
-                            <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                            <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                            <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                            <option value="EFECTIVO">Efectivo en Caja</option>
+                            <option value="TRANSFERENCIA">Transferencia SPEI</option>
                         </select>
                     </div>
 
                     {message && (
                         <div style={{
                             ...styles.message,
-                            backgroundColor: message.type === 'success' ? 'rgba(78, 204, 163, 0.2)' : 'rgba(233, 69, 96, 0.2)',
-                            borderColor: message.type === 'success' ? '#4ecca3' : '#e94560'
+                            backgroundColor: message.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                            color: message.type === 'success' ? Theme.colors.success : Theme.colors.error,
+                            borderColor: message.type === 'success' ? Theme.colors.success : Theme.colors.error,
                         }}>
                             {message.text}
                         </div>
@@ -96,14 +103,14 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
                             style={styles.cancelButton}
                             disabled={isSubmitting}
                         >
-                            CANCELAR
+                            Cancelar
                         </button>
                         <button 
                             type="submit" 
                             style={styles.submitButton}
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? 'PROCESANDO...' : 'CONFIRMAR PAGO'}
+                            {isSubmitting ? 'Procesando...' : 'Confirmar Transacción'}
                         </button>
                     </div>
                 </form>
@@ -123,96 +130,48 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000,
-        backdropFilter: 'blur(5px)'
+        zIndex: 2000,
+        backdropFilter: 'blur(8px)'
     },
     modal: {
-        backgroundColor: '#1a1a2e',
-        border: '1px solid #4ecca3',
-        borderRadius: '10px',
-        padding: '30px',
+        backgroundColor: Theme.colors.surface,
+        border: `1px solid ${Theme.colors.border}`,
+        borderRadius: '20px',
+        padding: '40px',
         width: '90%',
-        maxWidth: '450px',
-        boxShadow: '0 0 30px rgba(78, 204, 163, 0.2)'
+        maxWidth: '500px',
+        boxShadow: Theme.shadows.glow,
+        animation: 'scaleUp 0.3s ease-out',
     },
-    title: {
-        color: '#4ecca3',
-        marginTop: 0,
-        textAlign: 'center',
-        fontSize: '1.5rem',
-        borderBottom: '1px solid rgba(78, 204, 163, 0.3)',
-        paddingBottom: '15px'
-    },
-    orderId: {
-        color: '#fff',
-        opacity: 0.7,
-        fontSize: '0.8rem',
-        textAlign: 'center',
-        marginBottom: '20px'
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px'
-    },
-    inputGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px'
-    },
-    label: {
-        color: '#e94560',
-        fontSize: '0.8rem',
-        fontWeight: 'bold'
-    },
+    header: { textAlign: 'center', marginBottom: '30px' },
+    title: { color: Theme.colors.text, fontSize: '1.8rem', margin: 0 },
+    orderId: { color: Theme.colors.textMuted, fontSize: '0.85rem', margin: '5px 0 0 0' },
+    form: { display: 'flex', flexDirection: 'column', gap: '25px' },
+    inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
+    label: { color: Theme.colors.textMuted, fontSize: '0.85rem', fontWeight: 600 },
+    inputWrapper: { position: 'relative', display: 'flex', alignItems: 'center' },
+    currencyPrefix: { position: 'absolute', left: '15px', color: Theme.colors.primary, fontWeight: 700 },
     input: {
-        backgroundColor: '#16213e',
-        border: '1px solid rgba(78, 204, 163, 0.3)',
-        color: '#fff',
-        padding: '12px',
-        borderRadius: '5px',
-        fontSize: '1rem',
-        outline: 'none'
+        backgroundColor: Theme.colors.background,
+        border: `1px solid ${Theme.colors.border}`,
+        color: Theme.colors.text,
+        padding: '15px 15px 15px 35px',
+        borderRadius: '12px',
+        fontSize: '1.2rem',
+        width: '100%',
+        outline: 'none',
     },
     select: {
-        backgroundColor: '#16213e',
-        border: '1px solid rgba(78, 204, 163, 0.3)',
-        color: '#fff',
-        padding: '12px',
-        borderRadius: '5px',
+        backgroundColor: Theme.colors.background,
+        border: `1px solid ${Theme.colors.border}`,
+        color: Theme.colors.text,
+        padding: '15px',
+        borderRadius: '12px',
         fontSize: '1rem',
-        outline: 'none'
+        outline: 'none',
     },
-    message: {
-        padding: '10px',
-        borderRadius: '5px',
-        color: '#fff',
-        fontSize: '0.9rem',
-        textAlign: 'center',
-        border: '1px solid'
-    },
-    actions: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '15px',
-        marginTop: '10px'
-    },
-    cancelButton: {
-        backgroundColor: 'transparent',
-        border: '1px solid #e94560',
-        color: '#e94560',
-        padding: '10px 20px',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontWeight: 'bold'
-    },
-    submitButton: {
-        backgroundColor: '#4ecca3',
-        border: 'none',
-        color: '#1a1a2e',
-        padding: '10px 20px',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontWeight: 'bold'
-    }
+    message: { padding: '15px', borderRadius: '10px', fontSize: '0.9rem', textAlign: 'center', border: '1px solid' },
+    actions: { display: 'flex', gap: '15px', marginTop: '10px' },
+    cancelButton: { flex: 1, backgroundColor: 'transparent', border: `1px solid ${Theme.colors.border}`, color: Theme.colors.textMuted, padding: '15px', borderRadius: '12px' },
+    submitButton: { flex: 2, backgroundColor: Theme.colors.primary, color: '#fff', border: 'none', padding: '15px', borderRadius: '12px', fontWeight: 700, boxShadow: Theme.shadows.glow },
 };

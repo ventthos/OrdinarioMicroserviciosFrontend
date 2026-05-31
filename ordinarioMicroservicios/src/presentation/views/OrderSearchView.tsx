@@ -1,233 +1,163 @@
 import React, { useState } from 'react';
 import { useOrderViewModel } from '../hooks/useOrderViewModel';
+import { useNavigate } from 'react-router-dom';
+import { Theme } from '../theme';
 
 export const OrderSearchView: React.FC = () => {
-    const [searchId, setSearchId] = useState('');
+    const [id, setId] = useState<string>('');
     const { order, loading, error, searchOrder } = useOrderViewModel();
+    const navigate = useNavigate();
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        searchOrder(searchId);
+        if (id.trim()) {
+            await searchOrder(id.trim());
+        }
     };
 
     return (
-        <div style={styles.content}>
-            <header style={styles.header}>
-                <h1 style={styles.title}>BÚSQUEDA DE ÓRDENES</h1>
+        <div style={styles.viewContainer}>
+            <header style={styles.viewHeader}>
+                <h2 style={styles.title}>Rastreo de Órdenes</h2>
+                <p style={styles.subtitle}>Localiza cualquier transacción mediante su identificador único</p>
             </header>
 
-            <section style={styles.searchSection}>
+            <div style={styles.searchSection}>
                 <form onSubmit={handleSearch} style={styles.searchForm}>
-                    <input 
-                        type="text" 
-                        value={searchId} 
-                        onChange={(e) => setSearchId(e.target.value)}
-                        placeholder="INGRESE ID DE LA ORDEN (ej: 69b090c1...)"
-                        style={styles.searchInput}
+                    <input
+                        type="text"
+                        value={id}
+                        onChange={(e) => setId(e.target.value)}
+                        placeholder="Ingresa el ID de la orden (ej: 69ac63...)"
+                        style={styles.input}
                     />
                     <button type="submit" disabled={loading} style={styles.searchButton}>
-                        {loading ? 'BUSCANDO...' : 'BUSCAR'}
+                        {loading ? 'Buscando...' : 'Localizar Orden'}
                     </button>
                 </form>
-            </section>
+            </div>
 
-            <main style={styles.resultSection}>
-                {error && <div style={styles.errorBox}>{error}</div>}
-                
-                {order && (
-                    <div style={styles.orderCard}>
-                        <div style={styles.orderHeader}>
-                            <h2 style={styles.orderCode}>{order.orderCode}</h2>
-                            <span style={styles.orderStatus}>{order.status}</span>
+            {error && (
+                <div style={styles.errorBox}>
+                    <span style={styles.errorIcon}>⚠️</span>
+                    <p style={styles.errorText}>{error}</p>
+                </div>
+            )}
+
+            {order && (
+                <div style={styles.resultCard}>
+                    <div style={styles.resultHeader}>
+                        <div>
+                            <span style={styles.foundText}>ORDEN ENCONTRADA</span>
+                            <h3 style={styles.orderCode}>{order.orderCode}</h3>
                         </div>
-                        
-                        <div style={styles.orderGrid}>
+                        <span style={{
+                            ...styles.statusBadge,
+                            color: order.status === 'COMPLETED' || order.status === 'Pagado' ? Theme.colors.success : Theme.colors.warning
+                        }}>
+                            {order.status}
+                        </span>
+                    </div>
+
+                    <div style={styles.resultBody}>
+                        <div style={styles.resultInfo}>
                             <div style={styles.infoGroup}>
-                                <label style={styles.label}>ID DE ORDEN</label>
-                                <p style={styles.value}>{order.id}</p>
-                            </div>
-                            <div style={styles.infoGroup}>
-                                <label style={styles.label}>FECHA</label>
-                                <p style={styles.value}>{order.orderDate}</p>
-                            </div>
-                            <div style={styles.infoGroup}>
-                                <label style={styles.label}>USUARIO</label>
+                                <label style={styles.label}>Cliente / Usuario</label>
                                 <p style={styles.value}>{order.user}</p>
                             </div>
                             <div style={styles.infoGroup}>
-                                <label style={styles.label}>MONTO TOTAL</label>
-                                <p style={{ ...styles.value, color: '#4ecca3', fontSize: '1.5rem' }}>
-                                    ${order.totalAmount.toFixed(2)}
-                                </p>
+                                <label style={styles.label}>Total Bruto</label>
+                                <p style={{ ...styles.value, color: Theme.colors.primary }}>${order.totalAmount.toFixed(2)}</p>
                             </div>
                         </div>
-
-                        <div style={styles.productsSection}>
-                            <h3 style={styles.subTitle}>PRODUCTOS</h3>
-                            <table style={styles.table}>
-                                <thead>
-                                    <tr>
-                                        <th style={styles.th}>PRODUCTO ID</th>
-                                        <th style={styles.th}>CANTIDAD</th>
-                                        <th style={styles.th}>PRECIO UNITARIO</th>
-                                        <th style={styles.th}>SUBTOTAL</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {order.products.map((p, idx) => (
-                                        <tr key={idx} style={styles.tr}>
-                                            <td style={styles.td}>{p.productId}</td>
-                                            <td style={styles.td}>{p.quantity}</td>
-                                            <td style={styles.td}>${p.price.toFixed(2)}</td>
-                                            <td style={{ ...styles.td, color: '#4ecca3' }}>
-                                                ${(p.quantity * p.price).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        
+                        <button 
+                            onClick={() => navigate(`/orders/${order.id}`)}
+                            style={styles.viewDetailButton}
+                        >
+                            Ver Expediente Completo →
+                        </button>
                     </div>
-                )}
-            </main>
+                </div>
+            )}
         </div>
     );
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
-    content: {
-        padding: '20px',
-        maxWidth: '1000px',
-        margin: '0 auto'
-    },
-    header: {
-        borderBottom: '4px solid #e94560',
-        marginBottom: '40px',
-        paddingBottom: '10px',
-        textAlign: 'center'
-    },
-    title: {
-        margin: 0,
-        color: '#4ecca3',
-        fontSize: '2.5rem'
-    },
+    viewContainer: { animation: 'fadeIn 0.5s ease-out', maxWidth: '800px', margin: '0 auto' },
+    viewHeader: { marginBottom: '40px', textAlign: 'center' },
+    title: { fontSize: '2.5rem', margin: 0 },
+    subtitle: { color: Theme.colors.textMuted, marginTop: '10px' },
     searchSection: {
-        marginBottom: '40px'
+        backgroundColor: Theme.colors.surface,
+        padding: '40px',
+        borderRadius: '20px',
+        border: `1px solid ${Theme.colors.border}`,
+        boxShadow: Theme.shadows.card,
+        marginBottom: '30px',
     },
-    searchForm: {
-        display: 'flex',
-        gap: '15px'
-    },
-    searchInput: {
+    searchForm: { display: 'flex', gap: '15px' },
+    input: {
         flex: 1,
-        backgroundColor: '#16213e',
-        border: '2px solid #4ecca3',
-        borderRadius: '5px',
-        padding: '15px',
-        color: '#fff',
-        fontSize: '1.1rem',
+        backgroundColor: Theme.colors.background,
+        border: `1px solid ${Theme.colors.border}`,
+        borderRadius: '12px',
+        padding: '15px 20px',
+        color: Theme.colors.text,
+        fontSize: '1rem',
         outline: 'none',
-        fontFamily: 'inherit'
+        transition: Theme.transitions.default,
     },
     searchButton: {
-        backgroundColor: '#4ecca3',
-        color: '#1a1a2e',
+        backgroundColor: Theme.colors.primary,
+        color: '#fff',
         border: 'none',
         padding: '0 30px',
-        borderRadius: '5px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        fontSize: '1.1rem',
-        transition: 'transform 0.2s'
-    },
-    resultSection: {
-        minHeight: '200px'
+        borderRadius: '12px',
+        fontWeight: 700,
+        boxShadow: Theme.shadows.glow,
     },
     errorBox: {
-        backgroundColor: 'rgba(233, 69, 96, 0.2)',
-        border: '1px solid #e94560',
-        color: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
         padding: '20px',
-        borderRadius: '5px',
-        textAlign: 'center',
-        fontSize: '1.1rem'
+        borderRadius: '12px',
+        border: `1px solid ${Theme.colors.error}`,
     },
-    orderCard: {
-        backgroundColor: 'rgba(26, 26, 46, 0.95)',
-        border: '1px solid #4ecca3',
-        borderRadius: '10px',
+    errorText: { color: Theme.colors.error, margin: 0 },
+    resultCard: {
+        backgroundColor: Theme.colors.surface,
+        borderRadius: '20px',
         padding: '30px',
-        boxShadow: '0 0 20px rgba(0,0,0,0.5)'
+        border: `1px solid ${Theme.colors.accent}`,
+        animation: 'slideUp 0.4s ease-out',
     },
-    orderHeader: {
+    resultHeader: {
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '30px',
-        borderBottom: '1px solid rgba(78, 204, 163, 0.3)',
-        paddingBottom: '15px'
+        alignItems: 'flex-start',
+        borderBottom: `1px solid ${Theme.colors.border}`,
+        paddingBottom: '20px',
+        marginBottom: '20px',
     },
-    orderCode: {
-        margin: 0,
-        color: '#4ecca3',
-        fontSize: '1.8rem'
-    },
-    orderStatus: {
-        backgroundColor: '#e94560',
-        color: '#fff',
-        padding: '5px 15px',
-        borderRadius: '20px',
-        fontSize: '0.9rem',
-        fontWeight: 'bold'
-    },
-    orderGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '40px'
-    },
-    infoGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '5px'
-    },
-    label: {
-        color: '#e94560',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        textTransform: 'uppercase'
-    },
-    value: {
-        color: '#fff',
-        margin: 0,
-        fontSize: '1.1rem'
-    },
-    productsSection: {
-        marginTop: '30px'
-    },
-    subTitle: {
-        color: '#4ecca3',
-        borderBottom: '1px solid rgba(78, 204, 163, 0.3)',
-        paddingBottom: '10px',
-        marginBottom: '20px'
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        color: '#fff'
-    },
-    th: {
-        textAlign: 'left',
-        padding: '12px',
-        borderBottom: '2px solid #e94560',
-        color: '#4ecca3',
-        fontSize: '0.8rem'
-    },
-    tr: {
-        borderBottom: '1px solid rgba(233, 69, 96, 0.2)'
-    },
-    td: {
-        padding: '12px',
-        fontSize: '0.9rem'
+    foundText: { fontSize: '0.7rem', color: Theme.colors.accent, fontWeight: 700, letterSpacing: '2px' },
+    orderCode: { margin: '5px 0 0 0', fontSize: '1.8rem', color: Theme.colors.text },
+    statusBadge: { fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem' },
+    resultBody: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+    resultInfo: { display: 'flex', gap: '40px' },
+    infoGroup: { display: 'flex', flexDirection: 'column', gap: '5px' },
+    label: { fontSize: '0.8rem', color: Theme.colors.textMuted },
+    value: { fontSize: '1.2rem', margin: 0, fontWeight: 600 },
+    viewDetailButton: {
+        backgroundColor: 'transparent',
+        border: `1px solid ${Theme.colors.primary}`,
+        color: Theme.colors.primary,
+        padding: '12px 24px',
+        borderRadius: '10px',
+        fontWeight: 600,
+        transition: Theme.transitions.default,
     }
 };

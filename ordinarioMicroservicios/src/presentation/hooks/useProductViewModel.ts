@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import type { Product } from "../../domain/models/Product";
 import { GetProductsUseCase } from "../../useCase/GetProducts";
 import { DeleteProductUseCase } from "../../useCase/DeleteProduct";
@@ -7,7 +7,7 @@ import { ApiProductRepository } from "../../adapter/repositories/ApiProductRepos
 
 export const useProductViewModel = () => {
     const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     
     // Custom modal state
@@ -30,15 +30,15 @@ export const useProductViewModel = () => {
     const deleteProductUseCase = useMemo(() => new DeleteProductUseCase(productRepository), [productRepository]);
     const createProductUseCase = useMemo(() => new CreateProductUseCase(productRepository), [productRepository]);
 
-    const showModal = (title: string, message: string, type: 'danger' | 'success' | 'info', onConfirm: () => void = () => closeModal()) => {
+    const showModal = useCallback((title: string, message: string, type: 'danger' | 'success' | 'info', onConfirm: () => void = () => closeModal()) => {
         setModalConfig({ isOpen: true, title, message, type, onConfirm });
-    };
+    }, []);
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
         setModalConfig(prev => ({ ...prev, isOpen: false }));
-    };
+    }, []);
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setLoading(true);
         try {
             const data = await getProductsUseCase.execute();
@@ -50,9 +50,9 @@ export const useProductViewModel = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [getProductsUseCase]);
 
-    const deleteProduct = async (id: string) => {
+    const deleteProduct = useCallback(async (id: string) => {
         showModal(
             "CONFIRMAR ELIMINACIÓN",
             "¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.",
@@ -70,9 +70,9 @@ export const useProductViewModel = () => {
                 }
             }
         );
-    };
+    }, [showModal, closeModal, deleteProductUseCase]);
 
-    const createProduct = async (product: Omit<Product, 'id'>) => {
+    const createProduct = useCallback(async (product: Omit<Product, 'id'>) => {
         try {
             const newProduct = await createProductUseCase.execute(product);
             setProducts(prev => [...prev, newProduct]);
@@ -84,11 +84,7 @@ export const useProductViewModel = () => {
             console.error(err);
             return false;
         }
-    };
-
-    useEffect(() => {
-        fetchProducts();
-    }, []);
+    }, [showModal, createProductUseCase]);
 
     return {
         products,

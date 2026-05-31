@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import type { Order } from "../../domain/models/Order";
 import type { Payment } from "../../domain/models/Payment";
 import { GetOrderByIdUseCase } from "../../useCase/GetOrderById";
@@ -26,7 +26,20 @@ export const useOrderViewModel = () => {
     const getPaymentsByOrderIdUseCase = useMemo(() => new GetPaymentsByOrderIdUseCase(paymentRepository), [paymentRepository]);
     const processPaymentUseCase = useMemo(() => new ProcessPaymentUseCase(paymentRepository), [paymentRepository]);
 
-    const searchOrder = async (id: string) => {
+    const fetchPayments = useCallback(async (orderId: string) => {
+        setLoadingPayments(true);
+        try {
+            const data = await getPaymentsByOrderIdUseCase.execute(orderId);
+            setPayments(data);
+        } catch (err: any) {
+            console.error("Error al obtener pagos:", err);
+            // We don't necessarily want to block the whole view if payments fail
+        } finally {
+            setLoadingPayments(false);
+        }
+    }, [getPaymentsByOrderIdUseCase]);
+
+    const searchOrder = useCallback(async (id: string) => {
         if (!id.trim()) {
             setError("Por favor, ingrese un ID de orden");
             return;
@@ -48,30 +61,15 @@ export const useOrderViewModel = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [getOrderByIdUseCase, fetchPayments]);
 
-    const fetchPayments = async (orderId: string) => {
-        setLoadingPayments(true);
-        try {
-            const data = await getPaymentsByOrderIdUseCase.execute(orderId);
-            setPayments(data);
-        } catch (err: any) {
-            console.error("Error al obtener pagos:", err);
-            // We don't necessarily want to block the whole view if payments fail
-        } finally {
-            setLoadingPayments(false);
-        }
-    };
-
-    const processPayment = async (paymentData: { ordenId: string, amount: number, paymentMethod: string }): Promise<boolean> => {
+    const processPayment = useCallback(async (paymentData: { ordenId: string, amount: number, paymentMethod: string }): Promise<boolean> => {
         setLoading(true);
         setError(null);
         try {
             await processPaymentUseCase.execute(paymentData);
             // Refresh payments and order (to see updated status/debt if applicable)
-            if (order) {
-                await searchOrder(order.id);
-            }
+            await searchOrder(paymentData.ordenId);
             return true;
         } catch (err: any) {
             setError(err.message || "Error al procesar el pago");
@@ -79,9 +77,9 @@ export const useOrderViewModel = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [processPaymentUseCase, searchOrder]);
 
-    const fetchAllOrders = async () => {
+    const fetchAllOrders = useCallback(async () => {
         setLoading(true);
         setError(null);
 
@@ -94,9 +92,9 @@ export const useOrderViewModel = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [getAllOrdersUseCase]);
 
-    const createOrder = async (newOrder: Omit<Order, 'id' | 'user' | 'debt'> & { userId: string }): Promise<boolean> => {
+    const createOrder = useCallback(async (newOrder: Omit<Order, 'id' | 'user' | 'debt'> & { userId: string }): Promise<boolean> => {
         setLoading(true);
         setError(null);
 
@@ -111,7 +109,7 @@ export const useOrderViewModel = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [createOrderUseCase]);
 
     return {
         order,
@@ -125,10 +123,10 @@ export const useOrderViewModel = () => {
         createOrder,
         fetchPayments,
         processPayment,
-        clearOrder: () => {
+        clearOrder: useCallback(() => {
             setOrder(null);
             setPayments([]);
-        },
+        }, []),
         setError
     };
 };
