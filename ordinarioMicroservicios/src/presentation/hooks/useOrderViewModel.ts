@@ -5,6 +5,7 @@ import { GetOrderByIdUseCase } from "../../useCase/GetOrderById";
 import { GetAllOrdersUseCase } from "../../useCase/GetAllOrders";
 import { CreateOrderUseCase } from "../../useCase/CreateOrder";
 import { GetPaymentsByOrderIdUseCase } from "../../useCase/GetPaymentsByOrderId";
+import { ProcessPaymentUseCase } from "../../useCase/ProcessPayment";
 import { ApiOrderRepository } from "../../adapter/repositories/ApiOrderRepository";
 import { ApiPaymentRepository } from "../../adapter/repositories/ApiPaymentRepository";
 
@@ -23,6 +24,7 @@ export const useOrderViewModel = () => {
     const getAllOrdersUseCase = useMemo(() => new GetAllOrdersUseCase(orderRepository), [orderRepository]);
     const createOrderUseCase = useMemo(() => new CreateOrderUseCase(orderRepository), [orderRepository]);
     const getPaymentsByOrderIdUseCase = useMemo(() => new GetPaymentsByOrderIdUseCase(paymentRepository), [paymentRepository]);
+    const processPaymentUseCase = useMemo(() => new ProcessPaymentUseCase(paymentRepository), [paymentRepository]);
 
     const searchOrder = async (id: string) => {
         if (!id.trim()) {
@@ -58,6 +60,24 @@ export const useOrderViewModel = () => {
             // We don't necessarily want to block the whole view if payments fail
         } finally {
             setLoadingPayments(false);
+        }
+    };
+
+    const processPayment = async (paymentData: { ordenId: string, amount: number, paymentMethod: string }): Promise<boolean> => {
+        setLoading(true);
+        setError(null);
+        try {
+            await processPaymentUseCase.execute(paymentData);
+            // Refresh payments and order (to see updated status/debt if applicable)
+            if (order) {
+                await searchOrder(order.id);
+            }
+            return true;
+        } catch (err: any) {
+            setError(err.message || "Error al procesar el pago");
+            return false;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -104,6 +124,7 @@ export const useOrderViewModel = () => {
         fetchAllOrders,
         createOrder,
         fetchPayments,
+        processPayment,
         clearOrder: () => {
             setOrder(null);
             setPayments([]);

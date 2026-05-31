@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOrderViewModel } from '../hooks/useOrderViewModel';
+import { PaymentFormModal } from '../components/PaymentFormModal';
 
 interface OrderDetailViewProps {
     orderId: string;
@@ -7,13 +8,23 @@ interface OrderDetailViewProps {
 }
 
 export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBack }) => {
-    const { order, payments, loading, loadingPayments, error, searchOrder } = useOrderViewModel();
+    const { order, payments, loading, loadingPayments, error, searchOrder, processPayment } = useOrderViewModel();
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
     useEffect(() => {
         if (orderId) {
             searchOrder(orderId);
         }
     }, [orderId]);
+
+    const handleProcessPayment = async (amount: number, paymentMethod: string) => {
+        if (!order) return false;
+        return await processPayment({
+            ordenId: order.id,
+            amount,
+            paymentMethod
+        });
+    };
 
     return (
         <div style={styles.content}>
@@ -57,6 +68,14 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBac
                                     ${order.totalAmount.toFixed(2)}
                                 </p>
                             </div>
+                            {order.debt !== undefined && (
+                                <div style={styles.infoGroup}>
+                                    <label style={styles.label}>DEUDA PENDIENTE</label>
+                                    <p style={{ ...styles.value, color: '#e94560', fontSize: '1.5rem' }}>
+                                        ${order.debt.toFixed(2)}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div style={styles.productsSection}>
@@ -86,7 +105,17 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBac
                         </div>
 
                         <div style={{ ...styles.productsSection, marginTop: '40px' }}>
-                            <h3 style={styles.subTitle}>PAGOS REALIZADOS</h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                <h3 style={{ ...styles.subTitle, marginBottom: 0, borderBottom: 'none' }}>PAGOS REALIZADOS</h3>
+                                <button 
+                                    onClick={() => setIsPaymentModalOpen(true)}
+                                    style={styles.addPaymentButton}
+                                >
+                                    + AGREGAR PAGO
+                                </button>
+                            </div>
+                            <div style={{ height: '1px', backgroundColor: 'rgba(78, 204, 163, 0.3)', marginBottom: '20px' }}></div>
+                            
                             {loadingPayments ? (
                                 <div style={{ color: '#4ecca3', padding: '10px' }}>Cargando pagos...</div>
                             ) : payments.length === 0 ? (
@@ -128,6 +157,15 @@ export const OrderDetailView: React.FC<OrderDetailViewProps> = ({ orderId, onBac
                     </div>
                 )}
             </main>
+
+            {order && (
+                <PaymentFormModal
+                    isOpen={isPaymentModalOpen}
+                    onClose={() => setIsPaymentModalOpen(false)}
+                    onSubmit={handleProcessPayment}
+                    orderId={order.id}
+                />
+            )}
         </div>
     );
 };
@@ -238,6 +276,16 @@ const styles: { [key: string]: React.CSSProperties } = {
         borderBottom: '1px solid rgba(78, 204, 163, 0.3)',
         paddingBottom: '10px',
         marginBottom: '20px'
+    },
+    addPaymentButton: {
+        backgroundColor: '#4ecca3',
+        border: 'none',
+        color: '#1a1a2e',
+        padding: '8px 15px',
+        borderRadius: '5px',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        fontSize: '0.9rem'
     },
     table: {
         width: '100%',

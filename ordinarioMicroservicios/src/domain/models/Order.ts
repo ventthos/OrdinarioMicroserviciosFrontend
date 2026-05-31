@@ -11,6 +11,6 @@ export interface Order {
     totalAmount: number;
     status: string;
     user: string;
-    debt: number | null;
+    debt?: number;
     products: OrderProduct[];
 }
