@@ -1,15 +1,52 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrderViewModel } from '../hooks/useOrderViewModel';
 import { Theme } from '../theme';
+import { OrderFormModal } from '../components/OrderFormModal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 export const OrderListView: React.FC = () => {
-    const { orders, loading, error, fetchAllOrders } = useOrderViewModel();
+    const { 
+        orders, 
+        loading, 
+        error, 
+        fetchAllOrders, 
+        createOrder,
+        setError 
+    } = useOrderViewModel();
+    
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [notification, setNotification] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'success' | 'danger' | 'info';
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
+
     const navigate = useNavigate();
 
     useEffect(() => {
         fetchAllOrders();
     }, [fetchAllOrders]);
+
+    const handleCreateOrder = async (orderData: any) => {
+        const success = await createOrder(orderData);
+        if (success) {
+            setNotification({
+                isOpen: true,
+                title: 'ORDEN REGISTRADA',
+                message: 'La orden ha sido guardada exitosamente en el sistema.',
+                type: 'success'
+            });
+            setIsCreateModalOpen(false);
+        }
+        return success;
+    };
 
     return (
         <div style={styles.viewContainer}>
@@ -18,6 +55,12 @@ export const OrderListView: React.FC = () => {
                     <h2 style={styles.title}>Historial de Órdenes</h2>
                     <p style={styles.subtitle}>Gestión integral de transacciones y estados de pedido</p>
                 </div>
+                <button 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    style={styles.createButton}
+                >
+                    + Nueva Orden
+                </button>
             </header>
 
             <div style={styles.contentCard}>
@@ -106,15 +149,46 @@ export const OrderListView: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <OrderFormModal 
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSubmit={handleCreateOrder}
+                onError={(msg) => setError(msg)}
+            />
+
+            <ConfirmationModal 
+                isOpen={notification.isOpen}
+                onConfirm={() => setNotification(prev => ({ ...prev, isOpen: false }))}
+                onCancel={() => setNotification(prev => ({ ...prev, isOpen: false }))}
+                title={notification.title}
+                message={notification.message}
+                type={notification.type}
+                hideCancel={true}
+            />
         </div>
     );
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
     viewContainer: { animation: 'fadeIn 0.5s ease-out' },
-    viewHeader: { marginBottom: '30px' },
+    viewHeader: { 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '30px' 
+    },
     title: { fontSize: '2rem', margin: 0, color: Theme.colors.text },
     subtitle: { color: Theme.colors.textMuted, margin: '5px 0 0 0' },
+    createButton: {
+        backgroundColor: Theme.colors.primary,
+        color: '#fff',
+        border: 'none',
+        padding: '12px 24px',
+        borderRadius: '12px',
+        fontWeight: 700,
+        boxShadow: Theme.shadows.glow,
+    },
     contentCard: {
         backgroundColor: Theme.colors.surface,
         borderRadius: '16px',

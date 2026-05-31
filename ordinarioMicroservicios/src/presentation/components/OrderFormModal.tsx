@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Order, OrderProduct } from '../../domain/models/Order';
 import { ProductSelectorModal } from './ProductSelectorModal';
 import type { Product } from '../../domain/models/Product';
+import { Theme } from '../theme';
 
 interface OrderFormModalProps {
     isOpen: boolean;
@@ -16,7 +17,7 @@ interface OrderProductWithExtra extends OrderProduct {
 
 export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose, onSubmit, onError }) => {
     const [formData, setFormData] = useState({
-        orderCode: `ORD-${Math.floor(Math.random() * 1000)}-${Date.now()}`,
+        orderCode: `ORD-${Math.floor(Math.random() * 1000)}-${Date.now().toString().slice(-4)}`,
         orderDate: new Date().toISOString().split('T')[0],
         totalAmount: '0.00',
         status: 'PENDING',
@@ -68,13 +69,12 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
         e.preventDefault();
 
         if (!formData.orderCode || !formData.orderDate || !formData.userId || products.length === 0) {
-            onError("Todos los campos son obligatorios y debe haber al menos un producto.");
+            onError("Completa todos los campos y añade al menos un producto.");
             return;
         }
 
         setSubmitting(true);
         try {
-            // Remove extra 'name' field before sending
             const cleanProducts = products.map(({ productId, quantity, price }) => ({
                 productId,
                 quantity,
@@ -93,7 +93,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
             if (success) {
                 onClose();
                 setFormData({
-                    orderCode: `ORD-${Math.floor(Math.random() * 1000)}-${Date.now()}`,
+                    orderCode: `ORD-${Math.floor(Math.random() * 1000)}-${Date.now().toString().slice(-4)}`,
                     orderDate: new Date().toISOString().split('T')[0],
                     totalAmount: '0.00',
                     status: 'PENDING',
@@ -111,11 +111,15 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
     return (
         <div style={styles.backdrop}>
             <div style={styles.modal}>
-                <h2 style={styles.title}>NUEVA ORDEN</h2>
+                <div style={styles.header}>
+                    <h2 style={styles.title}>Nueva Orden</h2>
+                    <div style={styles.titleLine}></div>
+                </div>
+
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.row}>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>CÓDIGO DE ORDEN</label>
+                            <label style={styles.label}>Código de Control</label>
                             <input 
                                 name="orderCode" 
                                 value={formData.orderCode} 
@@ -124,7 +128,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
                             />
                         </div>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>FECHA</label>
+                            <label style={styles.label}>Fecha de Emisión</label>
                             <input 
                                 name="orderDate" 
                                 type="date"
@@ -137,84 +141,86 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
 
                     <div style={styles.row}>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>ID DE USUARIO (EMAIL)</label>
+                            <label style={styles.label}>Correo del cliente</label>
                             <input 
                                 name="userId" 
                                 type="email"
                                 value={formData.userId} 
                                 onChange={handleChange} 
                                 style={styles.input} 
-                                placeholder="ejemplo@correo.com"
+                                placeholder="usuario@gaminghub.com"
                             />
                         </div>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>ESTADO</label>
+                            <label style={styles.label}>Estado Inicial</label>
                             <select 
                                 name="status" 
                                 value={formData.status} 
                                 onChange={handleChange} 
                                 style={styles.input}
                             >
-                                <option value="PENDING">PENDING</option>
-                                <option value="COMPLETED">COMPLETED</option>
-                                <option value="CANCELLED">CANCELLED</option>
+                                <option value="PENDING">PENDIENTE</option>
+                                <option value="COMPLETED">COMPLETADA</option>
+                                <option value="CANCELLED">CANCELADA</option>
                             </select>
                         </div>
                     </div>
 
                     <div style={styles.productsSection}>
                         <div style={styles.productsHeader}>
-                            <label style={styles.label}>PRODUCTOS</label>
-                            <button type="button" onClick={() => setIsSelectorOpen(true)} style={styles.addBtn}>+ BUSCAR Y AÑADIR</button>
+                            <label style={styles.label}>Artículos en el Carrito</label>
+                            <button type="button" onClick={() => setIsSelectorOpen(true)} style={styles.addBtn}>
+                                + Buscar Producto
+                            </button>
                         </div>
-                        <div style={styles.productLabels}>
-                            <span style={{ ...styles.label, flex: 2 }}>PRODUCTO</span>
-                            <span style={{ ...styles.label, flex: 0.6 }}>CANT.</span>
-                            <span style={{ ...styles.label, flex: 1 }}>PRECIO</span>
-                            <span style={{ ...styles.label, flex: 1 }}>SUBTOTAL</span>
-                            <span style={{ width: '30px' }}></span>
-                        </div>
-                        {products.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '10px', color: 'rgba(78, 204, 163, 0.5)', fontSize: '0.9rem' }}>
-                                No hay productos añadidos. Haz clic en el botón para buscar uno.
-                            </div>
-                        )}
-                        {products.map((product, index) => (
-                            <div key={index} style={styles.productRow}>
-                                <div style={{ ...styles.productNameCell, flex: 2 }}>
-                                    <span style={styles.productNameText}>{product.name || 'Sin nombre'}</span>
-                                    <span style={styles.productIdText}>{product.productId}</span>
+                        
+                        <div style={styles.productList}>
+                            {products.length === 0 ? (
+                                <div style={styles.emptyProducts}>
+                                    El carrito está vacío. Inicia la búsqueda de hardware.
                                 </div>
-                                <input 
-                                    type="number"
-                                    placeholder="0"
-                                    value={product.quantity}
-                                    onChange={(e) => handleProductChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                                    style={{ ...styles.input, flex: 0.6, minWidth: '0' }}
-                                />
-                                <div style={{ ...styles.priceCell, flex: 1 }}>
-                                    ${product.price.toFixed(2)}
-                                </div>
-                                <div style={styles.subtotalValue}>
-                                    ${(product.quantity * product.price).toFixed(2)}
-                                </div>
-                                <button type="button" onClick={() => removeProduct(index)} style={styles.removeBtn}>✕</button>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div style={styles.totalContainer}>
-                        <label style={styles.totalLabel}>MONTO TOTAL DE LA ORDEN</label>
-                        <div style={styles.totalDisplay}>
-                            ${formData.totalAmount || '0.00'}
+                            ) : (
+                                products.map((product, index) => (
+                                    <div key={index} style={styles.productRow}>
+                                        <div style={styles.productInfo}>
+                                            <span style={styles.productNameText}>{product.name}</span>
+                                            <code style={styles.productIdText}>{product.productId}</code>
+                                        </div>
+                                        <div style={styles.productControls}>
+                                            <input 
+                                                type="number"
+                                                value={product.quantity}
+                                                onChange={(e) => handleProductChange(index, 'quantity', parseInt(e.target.value) || 0)}
+                                                style={styles.quantityInput}
+                                            />
+                                            <div style={styles.priceInfo}>
+                                                <span style={styles.unitPrice}>${product.price.toFixed(2)}</span>
+                                                <span style={styles.rowTotal}>${(product.quantity * product.price).toFixed(2)}</span>
+                                            </div>
+                                            <button type="button" onClick={() => removeProduct(index)} style={styles.removeBtn}>
+                                                ✕
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
 
-                    <div style={styles.actions}>
-                        <button type="button" onClick={onClose} style={styles.cancelBtn}>CANCELAR</button>
-                        <button type="submit" disabled={submitting} style={styles.submitBtn}>
-                            {submitting ? 'CREANDO...' : 'GUARDAR ORDEN'}
-                        </button>
+                    <div style={styles.footer}>
+                        <div style={styles.totalBox}>
+                            <span style={styles.totalLabel}>Total de Transacción</span>
+                            <span style={styles.totalValue}>${formData.totalAmount}</span>
+                        </div>
+
+                        <div style={styles.actions}>
+                            <button type="button" onClick={onClose} style={styles.cancelBtn}>
+                                Cancelar
+                            </button>
+                            <button type="submit" disabled={submitting} style={styles.submitBtn}>
+                                {submitting ? 'Procesando...' : 'Confirmar Orden'}
+                            </button>
+                        </div>
                     </div>
                 </form>
 
@@ -230,198 +236,83 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
 
 const styles: { [key: string]: React.CSSProperties } = {
     backdrop: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-        backdropFilter: 'blur(5px)'
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        zIndex: 2000, backdropFilter: 'blur(10px)'
     },
     modal: {
-        backgroundColor: '#1a1a2e',
-        border: '2px solid #4ecca3',
-        borderRadius: '10px',
-        width: '95%',
-        maxWidth: '800px',
-        padding: '30px',
-        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
-        maxHeight: '90vh',
-        overflowY: 'auto'
+        backgroundColor: Theme.colors.surface,
+        border: `1px solid ${Theme.colors.border}`,
+        borderRadius: '24px',
+        width: '95%', maxWidth: '850px',
+        padding: '40px',
+        boxShadow: Theme.shadows.glow,
+        maxHeight: '90vh', overflowY: 'auto'
     },
-    title: {
-        color: '#4ecca3',
-        marginTop: 0,
-        textAlign: 'center',
-        letterSpacing: '2px',
-        fontSize: '1.8rem'
-    },
-    form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px'
-    },
-    formGroup: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px'
-    },
-    row: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '20px'
-    },
-    label: {
-        color: '#e94560',
-        fontSize: '0.75rem',
-        fontWeight: 'bold',
-        textTransform: 'uppercase'
-    },
+    header: { textAlign: 'center', marginBottom: '30px' },
+    title: { color: Theme.colors.text, margin: 0, fontSize: '2rem' },
+    titleLine: { height: '3px', width: '60px', backgroundColor: Theme.colors.primary, margin: '10px auto 0', borderRadius: '2px', boxShadow: Theme.shadows.glow },
+    form: { display: 'flex', flexDirection: 'column', gap: '25px' },
+    formGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
+    row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' },
+    label: { color: Theme.colors.textMuted, fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' },
     input: {
-        backgroundColor: '#16213e',
-        border: '1px solid #4ecca3',
-        borderRadius: '4px',
-        padding: '12px',
-        color: '#fff',
-        fontFamily: 'inherit',
-        fontSize: '0.95rem',
-        outline: 'none',
-        width: '100%',
-        boxSizing: 'border-box'
+        backgroundColor: Theme.colors.background,
+        border: `1px solid ${Theme.colors.border}`,
+        borderRadius: '12px', padding: '12px 16px',
+        color: Theme.colors.text, fontSize: '1rem', outline: 'none'
     },
     productsSection: {
-        border: '1px solid rgba(78, 204, 163, 0.3)',
-        borderRadius: '8px',
-        padding: '20px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-        backgroundColor: 'rgba(22, 33, 62, 0.5)'
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderRadius: '16px', padding: '20px',
+        border: `1px solid ${Theme.colors.border}`
     },
-    productsHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '5px'
-    },
-    productLabels: {
-        display: 'flex',
-        gap: '10px',
-        paddingRight: '40px',
-        marginBottom: '5px'
-    },
+    productsHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+    productList: { display: 'flex', flexDirection: 'column', gap: '15px' },
+    emptyProducts: { textAlign: 'center', padding: '30px', color: Theme.colors.textMuted, border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '12px' },
     productRow: {
-        display: 'flex',
-        gap: '10px',
-        alignItems: 'center',
-        width: '100%',
-        padding: '8px 0',
-        borderBottom: '1px solid rgba(233, 69, 96, 0.1)'
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '15px', backgroundColor: Theme.colors.surfaceLight,
+        borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'
     },
-    productNameCell: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '2px',
-        minWidth: '0'
+    productInfo: { display: 'flex', flexDirection: 'column', gap: '4px' },
+    productNameText: { fontWeight: 700, color: Theme.colors.text },
+    productIdText: { fontSize: '0.75rem', color: Theme.colors.accent, opacity: 0.8 },
+    productControls: { display: 'flex', alignItems: 'center', gap: '20px' },
+    quantityInput: {
+        width: '60px', backgroundColor: Theme.colors.background,
+        border: `1px solid ${Theme.colors.border}`, borderRadius: '8px',
+        padding: '8px', color: Theme.colors.text, textAlign: 'center'
     },
-    productNameText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: '0.9rem',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap'
-    },
-    productIdText: {
-        color: '#e94560',
-        fontSize: '0.7rem'
-    },
-    priceCell: {
-        color: '#fff',
-        fontSize: '0.95rem',
-        textAlign: 'center'
-    },
-    subtotalValue: {
-        flex: 1,
-        color: '#4ecca3',
-        fontWeight: 'bold',
-        textAlign: 'right',
-        fontSize: '0.9rem',
-        minWidth: '70px'
-    },
+    priceInfo: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: '100px' },
+    unitPrice: { fontSize: '0.75rem', color: Theme.colors.textMuted },
+    rowTotal: { fontWeight: 700, color: Theme.colors.success },
     addBtn: {
-        backgroundColor: '#e94560',
-        border: 'none',
-        color: '#fff',
-        padding: '8px 15px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontSize: '0.8rem',
-        fontWeight: 'bold',
-        transition: 'opacity 0.2s',
-        letterSpacing: '1px'
+        backgroundColor: Theme.colors.accent, color: '#000',
+        border: 'none', padding: '8px 16px', borderRadius: '8px',
+        fontWeight: 700, fontSize: '0.85rem'
     },
     removeBtn: {
-        backgroundColor: '#e94560',
-        border: 'none',
-        color: '#fff',
-        width: '30px',
-        height: '30px',
-        minWidth: '30px',
-        borderRadius: '50%',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '0.8rem'
+        backgroundColor: 'rgba(255,49,49,0.1)', color: Theme.colors.error,
+        border: `1px solid ${Theme.colors.error}`, width: '32px', height: '32px',
+        borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center'
     },
-    totalContainer: {
-        backgroundColor: '#0f3460',
-        padding: '20px',
-        borderRadius: '8px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        border: '1px solid #4ecca3'
+    footer: {
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${Theme.colors.border}`
     },
-    totalLabel: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: '1rem'
-    },
-    totalDisplay: {
-        color: '#4ecca3',
-        fontSize: '1.8rem',
-        fontWeight: 'bold'
-    },
-    actions: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        gap: '15px',
-        marginTop: '10px'
-    },
+    totalBox: { display: 'flex', flexDirection: 'column' },
+    totalLabel: { fontSize: '0.85rem', color: Theme.colors.textMuted },
+    totalValue: { fontSize: '2rem', fontWeight: 800, color: Theme.colors.primary, textShadow: Theme.shadows.glow },
+    actions: { display: 'flex', gap: '15px' },
     cancelBtn: {
-        backgroundColor: 'transparent',
-        border: '1px solid #e94560',
-        color: '#e94560',
-        padding: '12px 25px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        transition: 'all 0.2s'
+        backgroundColor: 'transparent', border: `1px solid ${Theme.colors.border}`,
+        color: Theme.colors.textMuted, padding: '14px 24px', borderRadius: '12px'
     },
     submitBtn: {
-        backgroundColor: '#4ecca3',
-        border: 'none',
-        color: '#1a1a2e',
-        padding: '12px 25px',
-        borderRadius: '4px',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-        transition: 'all 0.2s'
+        backgroundColor: Theme.colors.primary, color: '#fff',
+        border: 'none', padding: '14px 24px', borderRadius: '12px',
+        fontWeight: 700, boxShadow: Theme.shadows.glow
     }
 };
