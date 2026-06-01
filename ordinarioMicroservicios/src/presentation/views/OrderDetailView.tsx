@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOrderViewModel } from '../hooks/useOrderViewModel';
 import { PaymentFormModal } from '../components/PaymentFormModal';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 import { Theme } from '../theme';
 
 export const OrderDetailView: React.FC = () => {
@@ -9,6 +10,17 @@ export const OrderDetailView: React.FC = () => {
     const navigate = useNavigate();
     const { order, payments, loading, loadingPayments, error, searchOrder, processPayment } = useOrderViewModel();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [notification, setNotification] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'success' | 'danger' | 'info';
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'info'
+    });
 
     useEffect(() => {
         if (id) {
@@ -18,15 +30,34 @@ export const OrderDetailView: React.FC = () => {
 
     const handleProcessPayment = async (amount: number, paymentMethod: string) => {
         if (!order) return false;
-        const success = await processPayment({
-            ordenId: order.id,
-            amount,
-            paymentMethod
-        });
-        
-        // Note: processPayment already calls searchOrder internally on success, 
-        // which will update both the order (debt) and the payments list.
-        return success;
+        try {
+            const success = await processPayment({
+                ordenId: order.id,
+                amount,
+                paymentMethod
+            });
+            
+            if (success) {
+                setNotification({
+                    isOpen: true,
+                    title: 'PAGO PROCESADO',
+                    message: 'La transacción se ha completado y el saldo ha sido actualizado.',
+                    type: 'success'
+                });
+                setIsPaymentModalOpen(false);
+                // searchOrder(order.id) is already called inside processPayment in the ViewModel
+                return true;
+            }
+            return false;
+        } catch (err: any) {
+            setNotification({
+                isOpen: true,
+                title: 'ERROR DE COBRO',
+                message: err.message || 'La pasarela de pago ha rechazado la operación.',
+                type: 'danger'
+            });
+            return false;
+        }
     };
 
     if (loading && !order) {
@@ -192,6 +223,23 @@ export const OrderDetailView: React.FC = () => {
                     orderId={order.id}
                 />
             )}
+
+            <ConfirmationModal 
+                isOpen={notification.isOpen}
+                onConfirm={() => setNotification(prev => ({ ...prev, isOpen: false }))}
+                onCancel={() => setNotification(prev => ({ ...prev, isOpen: false }))}
+                title={notification.title}
+                message={notification.message}
+                type={notification.type}
+                hideCancel={true}
+            />
+
+            {loading && isPaymentModalOpen && (
+                <div style={styles.processingOverlay}>
+                    <div style={styles.loader}></div>
+                    <p style={styles.processingText}>PROCESANDO TRANSACCIÓN NEÓN...</p>
+                </div>
+            )}
         </div>
     );
 };
@@ -236,4 +284,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     emptyText: { color: Theme.colors.textMuted, textAlign: 'center', padding: '20px' },
     stateContainer: { padding: '100px', textAlign: 'center' },
     loader: { width: '40px', height: '40px', border: '3px solid #333', borderTopColor: Theme.colors.primary, borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 20px' },
+    processingOverlay: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+        zIndex: 3000, backdropFilter: 'blur(10px)'
+    },
+    processingText: { color: Theme.colors.primary, fontWeight: 700, letterSpacing: '2px', marginTop: '20px' }
 };

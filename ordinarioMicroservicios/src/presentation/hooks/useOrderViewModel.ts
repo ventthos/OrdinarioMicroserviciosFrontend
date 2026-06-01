@@ -48,9 +48,8 @@ export const useOrderViewModel = () => {
 
         setLoading(true);
         setError(null);
-        setOrder(null);
-        setPayments([]);
-
+        // Do not clear the order state here to allow a smooth refresh of data like 'debt'
+        
         try {
             const data = await getOrderByIdUseCase.execute(id);
             setOrder(data);
