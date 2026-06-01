@@ -6,7 +6,7 @@ export class ApiPaymentRepository implements PaymentRepository {
     private readonly apiUrl = "http://localhost:8085/pagos";
 
     private async handleResponse<T>(response: Response): Promise<T> {
-        if (!response.ok) {
+        if (!response.ok && response.status !== 202) {
             let errorMsg = `Error del servidor: ${response.status}`;
             try {
                 const errorData = await response.json();
@@ -16,6 +16,12 @@ export class ApiPaymentRepository implements PaymentRepository {
         }
 
         const result: ApiResponse<T> = await response.json();
+
+        if (result.status === "PENDING" || response.status === 202) {
+            const pendingError = new Error(result.message || "Procesamiento de pago aceptado y pendiente");
+            (pendingError as any).isPending = true;
+            throw pendingError;
+        }
 
         if (result.status === "ERROR") {
             // Special case for getPayments where "no payments" is reported as error

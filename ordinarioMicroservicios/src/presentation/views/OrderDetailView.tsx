@@ -14,7 +14,7 @@ export const OrderDetailView: React.FC = () => {
         isOpen: boolean;
         title: string;
         message: string;
-        type: 'success' | 'danger' | 'info';
+        type: 'success' | 'danger' | 'info' | 'warning';
     }>({
         isOpen: false,
         title: '',
@@ -45,11 +45,20 @@ export const OrderDetailView: React.FC = () => {
                     type: 'success'
                 });
                 setIsPaymentModalOpen(false);
-                // searchOrder(order.id) is already called inside processPayment in the ViewModel
                 return true;
             }
             return false;
         } catch (err: any) {
+            if (err.isPending) {
+                setNotification({
+                    isOpen: true,
+                    title: 'PAGO PENDIENTE',
+                    message: err.message,
+                    type: 'warning'
+                });
+                setIsPaymentModalOpen(false);
+                return true; // Consider as success for UX flow
+            }
             setNotification({
                 isOpen: true,
                 title: 'ERROR DE COBRO',
@@ -237,7 +246,7 @@ export const OrderDetailView: React.FC = () => {
             {loading && isPaymentModalOpen && (
                 <div style={styles.processingOverlay}>
                     <div style={styles.loader}></div>
-                    <p style={styles.processingText}>PROCESANDO TRANSACCIÓN NEÓN...</p>
+                    <p style={styles.processingText}>PROCESANDO TRANSACCIÓN...</p>
                 </div>
             )}
         </div>
