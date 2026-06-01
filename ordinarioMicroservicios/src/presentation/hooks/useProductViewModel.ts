@@ -15,7 +15,7 @@ export const useProductViewModel = () => {
         isOpen: boolean;
         title: string;
         message: string;
-        type: 'danger' | 'success' | 'info';
+        type: 'danger' | 'success' | 'info' | 'warning';
         onConfirm: () => void;
         hideCancel?: boolean;
     }>({
@@ -34,7 +34,7 @@ export const useProductViewModel = () => {
     const showModal = useCallback((
         title: string, 
         message: string, 
-        type: 'danger' | 'success' | 'info', 
+        type: 'danger' | 'success' | 'info' | 'warning', 
         onConfirm: () => void = () => closeModal(),
         hideCancel: boolean = false
     ) => {
@@ -89,6 +89,10 @@ export const useProductViewModel = () => {
             showModal("ÉXITO", "¡Producto creado correctamente!", "success", () => closeModal(), true);
             return true;
         } catch (err: any) {
+            if (err.isPending) {
+                showModal("PROCESANDO", err.message, "warning", () => closeModal(), true);
+                return true; // Return true because it was accepted
+            }
             const errorMessage = err.message || "Error al crear el producto";
             showModal("ERROR", errorMessage, "danger", () => closeModal(), true);
             console.error(err);

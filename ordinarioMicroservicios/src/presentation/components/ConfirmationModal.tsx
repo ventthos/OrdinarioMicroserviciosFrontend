@@ -9,7 +9,7 @@ interface ConfirmationModalProps {
     onCancel: () => void;
     confirmText?: string;
     cancelText?: string;
-    type?: 'danger' | 'success' | 'info';
+    type?: 'danger' | 'success' | 'info' | 'warning';
     hideCancel?: boolean;
 }
 
@@ -26,8 +26,23 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 }) => {
     if (!isOpen) return null;
 
-    const accentColor = type === 'danger' ? Theme.colors.error : type === 'success' ? Theme.colors.success : Theme.colors.primary;
-    const glowColor = type === 'danger' ? 'rgba(255, 49, 49, 0.4)' : type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(188, 19, 254, 0.4)';
+    const getAccentColor = () => {
+        switch (type) {
+            case 'danger': return Theme.colors.error;
+            case 'success': return Theme.colors.success;
+            case 'warning': return Theme.colors.warning;
+            default: return Theme.colors.primary;
+        }
+    };
+
+    const accentColor = getAccentColor();
+    const glowColor = type === 'danger' 
+        ? 'rgba(255, 49, 49, 0.4)' 
+        : type === 'success' 
+            ? 'rgba(16, 185, 129, 0.2)' 
+            : type === 'warning'
+                ? 'rgba(255, 204, 0, 0.3)'
+                : 'rgba(188, 19, 254, 0.4)';
 
     return (
         <div style={styles.backdrop}>

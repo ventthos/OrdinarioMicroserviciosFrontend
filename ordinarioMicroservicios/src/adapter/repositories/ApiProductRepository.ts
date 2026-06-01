@@ -6,7 +6,7 @@ export class ApiProductRepository implements ProductRepository {
     private readonly apiUrl = "http://localhost:8085/productos";
 
     private async handleResponse<T>(response: Response): Promise<T> {
-        if (!response.ok) {
+        if (!response.ok && response.status !== 202) {
             let errorMsg = `Error del servidor: ${response.status}`;
             try {
                 const errorData = await response.json();
@@ -17,6 +17,13 @@ export class ApiProductRepository implements ProductRepository {
 
         const result: ApiResponse<T> = await response.json();
         
+        if (result.status === "PENDING" || response.status === 202) {
+            // Throw a specific error object that the ViewModel can identify as PENDING
+            const pendingError = new Error(result.message || "Operación aceptada y pendiente de procesamiento");
+            (pendingError as any).isPending = true;
+            throw pendingError;
+        }
+
         if (result.status !== "SUCCESS") {
             throw new Error(result.message || "Operación fallida");
         }
