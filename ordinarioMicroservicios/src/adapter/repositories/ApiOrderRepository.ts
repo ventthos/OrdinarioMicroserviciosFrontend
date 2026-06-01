@@ -6,7 +6,7 @@ export class ApiOrderRepository implements OrderRepository {
     private readonly apiUrl = "http://localhost:8085/ordenes";
 
     private async handleResponse<T>(response: Response): Promise<T> {
-        if (!response.ok) {
+        if (!response.ok && response.status !== 202) {
             // Handle HTTP errors like 503, 500, 404
             let errorMsg = `Error del servidor: ${response.status} ${response.statusText}`;
             try {
@@ -19,6 +19,12 @@ export class ApiOrderRepository implements OrderRepository {
         }
 
         const result: ApiResponse<T> = await response.json();
+
+        if (result.status === "PENDING" || response.status === 202) {
+            const pendingError = new Error(result.message || "Operación de orden aceptada y pendiente de procesamiento");
+            (pendingError as any).isPending = true;
+            throw pendingError;
+        }
 
         if (result.status === "ERROR") {
             throw new Error(result.message || "Operación fallida en el servidor");

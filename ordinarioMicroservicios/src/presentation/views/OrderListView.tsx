@@ -20,7 +20,7 @@ export const OrderListView: React.FC = () => {
         isOpen: boolean;
         title: string;
         message: string;
-        type: 'success' | 'danger' | 'info';
+        type: 'success' | 'danger' | 'info' | 'warning';
     }>({
         isOpen: false,
         title: '',
@@ -49,6 +49,16 @@ export const OrderListView: React.FC = () => {
             }
             return false;
         } catch (err: any) {
+            if (err.isPending) {
+                setNotification({
+                    isOpen: true,
+                    title: 'PROCESANDO ORDEN',
+                    message: err.message,
+                    type: 'warning'
+                });
+                setIsCreateModalOpen(false);
+                return true; // Consider as success since it's accepted
+            }
             const errorMsg = err.message || 'Error desconocido al procesar la orden.';
             setNotification({
                 isOpen: true,
