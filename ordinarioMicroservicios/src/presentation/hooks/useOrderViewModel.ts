@@ -63,15 +63,14 @@ export const useOrderViewModel = () => {
 
     const processPayment = useCallback(async (paymentData: { ordenId: string, amount: number, paymentMethod: string }): Promise<boolean> => {
         setLoading(true);
-        setError(null);
         try {
             await processPaymentUseCase.execute(paymentData);
             // Refresh payments and order (to see updated status/debt if applicable)
             await searchOrder(paymentData.ordenId);
             return true;
         } catch (err: any) {
-            setError(err.message || "Error al procesar el pago");
-            return false;
+            console.error("Error al procesar el pago:", err);
+            throw err; // Re-throw to be handled by the view
         } finally {
             setLoading(false);
         }

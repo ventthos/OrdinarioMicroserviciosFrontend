@@ -78,7 +78,7 @@ export const OrderDetailView: React.FC = () => {
         );
     }
 
-    if (error) {
+    if (error && !order) {
         return (
             <div style={styles.stateContainer}>
                 <div style={styles.errorIcon}>⚠️</div>
