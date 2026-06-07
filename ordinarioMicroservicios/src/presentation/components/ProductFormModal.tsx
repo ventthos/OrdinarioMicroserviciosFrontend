@@ -43,8 +43,8 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
             return;
         }
 
-        if (quantity < 0) {
-            onError("El stock no puede ser negativo.");
+        if (quantity <= 0) {
+            onError("El stock debe ser mayor a 0");
             return;
         }
 
@@ -110,7 +110,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
 
                     <div style={styles.row}>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>Precio (USD)</label>
+                            <label style={styles.label}>Precio (MXN)</label>
                             <input 
                                 name="price" 
                                 type="number" 

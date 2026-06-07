@@ -212,7 +212,7 @@ export const OrderDetailView: React.FC = () => {
                                                     </span>
                                                 </td>
                                                 <td style={{ ...styles.td, color: Theme.colors.success, fontWeight: 700 }}>
-                                                    ${p.amount.toFixed(2)}
+                                                    $ {p.amount.toFixed(2)} MXN
                                                 </td>
                                             </tr>
                                         ))}
@@ -301,3 +301,5 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     processingText: { color: Theme.colors.primary, fontWeight: 700, letterSpacing: '2px', marginTop: '20px' }
 };
+
+

@@ -92,7 +92,7 @@ export const ProductSelectorModal: React.FC<ProductSelectorModalProps> = ({ isOp
                                         {product.quantity} U
                                     </span>
                                     <span style={styles.productPrice}>
-                                        ${product.price.toFixed(2)}
+                                        $ {product.price.toFixed(2)} MXN
                                     </span>
                                 </div>
                             </div>

@@ -11,7 +11,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) =
         <div style={styles.card}>
             <div style={styles.imageContainer}>
                 <img src={product.imageUrl} alt={product.name} style={styles.image} />
-                <div style={styles.priceTag}>${product.price.toFixed(2)}</div>
+                <div style={styles.priceTag}>$ {product.price.toFixed(2)} MXN</div>
             </div>
             <div style={styles.content}>
                 <h3 style={styles.title}>{product.name}</h3>

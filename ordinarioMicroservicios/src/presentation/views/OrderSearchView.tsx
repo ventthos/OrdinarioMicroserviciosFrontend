@@ -67,7 +67,7 @@ export const OrderSearchView: React.FC = () => {
                             </div>
                             <div style={styles.infoGroup}>
                                 <label style={styles.label}>Total Bruto</label>
-                                <p style={{ ...styles.value, color: Theme.colors.primary }}>${order.totalAmount.toFixed(2)}</p>
+                                <p style={{ ...styles.value, color: Theme.colors.primary }}>$ {order.totalAmount.toFixed(2)} MXN</p>
                             </div>
                         </div>
                         

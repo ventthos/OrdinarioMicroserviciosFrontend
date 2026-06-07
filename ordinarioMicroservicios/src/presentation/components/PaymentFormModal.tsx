@@ -77,6 +77,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
                                 placeholder="0.00"
                                 required
                             />
+                            <span style={{ marginLeft: '10px', color: Theme.colors.text, fontWeight: 'bold' }}>MXN</span>
                         </div>
                     </div>
 

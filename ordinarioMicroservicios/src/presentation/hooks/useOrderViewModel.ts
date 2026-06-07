@@ -34,7 +34,7 @@ export const useOrderViewModel = () => {
             setPayments(data);
         } catch (err: any) {
             console.error("Error al obtener pagos:", err);
-            // We don't necessarily want to block the whole view if payments fail
+            
         } finally {
             setLoadingPayments(false);
         }

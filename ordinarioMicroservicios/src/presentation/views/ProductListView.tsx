@@ -62,7 +62,7 @@ export const ProductListView: React.FC = () => {
                             </button>
                             <div style={styles.imageContainer}>
                                 <img src={product.imageUrl} alt={product.name} style={styles.image} />
-                                <div style={styles.priceTag}>${product.price.toFixed(2)}</div>
+                                <div style={styles.priceTag}>$ {product.price.toFixed(2)} MXN</div>
                             </div>
                             <div style={styles.cardContent}>
                                 <h4 style={styles.productName}>{product.name}</h4>

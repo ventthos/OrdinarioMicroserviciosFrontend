@@ -222,7 +222,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
                     <div style={styles.footer}>
                         <div style={styles.totalBox}>
                             <span style={styles.totalLabel}>Total de Transacción</span>
-                            <span style={styles.totalValue}>${formData.totalAmount}</span>
+                            <span style={styles.totalValue}>$ {formData.totalAmount} MXN</span>
                         </div>
 
                         <div style={styles.actions}>
@@ -327,4 +327,6 @@ const styles: { [key: string]: React.CSSProperties } = {
         border: 'none', padding: '14px 24px', borderRadius: '12px',
         fontWeight: 700, boxShadow: Theme.shadows.glow
     }
+};
+
 };

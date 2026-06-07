@@ -129,14 +129,14 @@ export const OrderListView: React.FC = () => {
                                             <span style={styles.dateText}>{order.orderDate}</span>
                                         </td>
                                         <td style={styles.td}>
-                                            <span style={styles.totalText}>${order.totalAmount.toFixed(2)}</span>
+                                            <span style={styles.totalText}>$ {order.totalAmount.toFixed(2)} MXN</span>
                                         </td>
                                         <td style={styles.td}>
                                             <span style={{
                                                 ...styles.debtText,
                                                 color: (order.debt || 0) > 0 ? Theme.colors.error : Theme.colors.success
                                             }}>
-                                                ${(order.debt || 0).toFixed(2)}
+                                                $ {(order.debt || 0).toFixed(2)} MXN
                                             </span>
                                         </td>
                                         <td style={styles.td}>
