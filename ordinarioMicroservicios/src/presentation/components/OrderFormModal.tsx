@@ -11,10 +11,6 @@ interface OrderFormModalProps {
     onError: (message: string) => void;
 }
 
-interface OrderProductWithExtra extends OrderProduct {
-    name?: string;
-}
-
 export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose, onSubmit, onError }) => {
     const [formData, setFormData] = useState({
         orderCode: `ORD-${Math.floor(Math.random() * 1000)}-${Date.now().toString().slice(-4)}`,
@@ -24,7 +20,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
         userId: ''
     });
 
-    const [products, setProducts] = useState<OrderProductWithExtra[]>([]);
+    const [products, setProducts] = useState<OrderProduct[]>([]);
     const [isSelectorOpen, setIsSelectorOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
@@ -60,7 +56,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
     };
 
     const handleSelectProduct = (product: Product) => {
-        const newProduct: OrderProductWithExtra = {
+        const newProduct: OrderProduct = {
             productId: product.id,
             name: product.name,
             quantity: 1,
@@ -240,6 +236,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
                     isOpen={isSelectorOpen} 
                     onClose={() => setIsSelectorOpen(false)} 
                     onSelect={handleSelectProduct}
+                    excludeIds={products.map(p => p.productId)}
                 />
             </div>
         </div>
@@ -327,6 +324,4 @@ const styles: { [key: string]: React.CSSProperties } = {
         border: 'none', padding: '14px 24px', borderRadius: '12px',
         fontWeight: 700, boxShadow: Theme.shadows.glow
     }
-};
-
 };

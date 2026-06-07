@@ -144,12 +144,13 @@ export const OrderDetailView: React.FC = () => {
 
                     {/* Products Section */}
                     <div style={styles.sectionCard}>
-                        <h3 style={styles.sectionTitle}>Productos Vinculados</h3>
+                        <h3 style={styles.sectionTitle}>Productos comprados</h3>
                         <div style={styles.tableWrapper}>
                             <table style={styles.table}>
                                 <thead>
                                     <tr>
-                                        <th style={styles.th}>SKU / ID</th>
+                                        <th style={{ ...styles.th, textAlign: 'left' }}>SKU / ID</th>
+                                        <th style={{ ...styles.th, textAlign: 'left' }}>Nombre</th>
                                         <th style={styles.th}>Cant.</th>
                                         <th style={styles.th}>Precio Unit.</th>
                                         <th style={styles.th}>Subtotal</th>
@@ -158,7 +159,8 @@ export const OrderDetailView: React.FC = () => {
                                 <tbody>
                                     {order.products.map((p, idx) => (
                                         <tr key={idx} style={styles.tr}>
-                                            <td style={styles.td}><code style={styles.skuText}>{p.productId}</code></td>
+                                            <td style={{ ...styles.td, textAlign: 'left' }}><code style={styles.skuText}>{p.productId}</code></td>
+                                            <td style={{ ...styles.td, textAlign: 'left', fontWeight: 600 }}>{p.name || 'N/A'}</td>
                                             <td style={styles.td}>{p.quantity}</td>
                                             <td style={styles.td}>${p.price.toFixed(2)}</td>
                                             <td style={{ ...styles.td, color: Theme.colors.accent, fontWeight: 600 }}>

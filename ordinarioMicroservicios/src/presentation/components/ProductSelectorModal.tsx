@@ -7,9 +7,10 @@ interface ProductSelectorModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSelect: (product: Product) => void;
+    excludeIds?: string[];
 }
 
-export const ProductSelectorModal: React.FC<ProductSelectorModalProps> = ({ isOpen, onClose, onSelect }) => {
+export const ProductSelectorModal: React.FC<ProductSelectorModalProps> = ({ isOpen, onClose, onSelect, excludeIds = [] }) => {
     const { products, loading, error, refreshProducts } = useProductViewModel();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -21,10 +22,12 @@ export const ProductSelectorModal: React.FC<ProductSelectorModalProps> = ({ isOp
 
     if (!isOpen) return null;
 
-    const filteredProducts = products.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProducts = products
+        .filter(p => !excludeIds.includes(p.id))
+        .filter(p => 
+            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
     return (
         <div style={styles.backdrop}>
