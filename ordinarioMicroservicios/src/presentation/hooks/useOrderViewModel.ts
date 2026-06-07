@@ -48,12 +48,10 @@ export const useOrderViewModel = () => {
 
         setLoading(true);
         setError(null);
-        // Do not clear the order state here to allow a smooth refresh of data like 'debt'
         
         try {
             const data = await getOrderByIdUseCase.execute(id);
             setOrder(data);
-            // Optionally fetch payments here or separately
             await fetchPayments(id);
         } catch (err: any) {
             setError(err.message || "Error al buscar la orden");
@@ -85,7 +83,8 @@ export const useOrderViewModel = () => {
 
         try {
             const data = await getAllOrdersUseCase.execute();
-            setOrders(data);
+            // The API returns orders in ascending order, so we reverse them to show newest first
+            setOrders([...data].reverse());
         } catch (err: any) {
             setError(err.message || "Error al obtener las órdenes");
             console.error(err);

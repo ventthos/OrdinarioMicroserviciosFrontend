@@ -57,7 +57,7 @@ export const OrderListView: React.FC = () => {
                     type: 'warning'
                 });
                 setIsCreateModalOpen(false);
-                return true; // Consider as success since it's accepted
+                return true; 
             }
             const errorMsg = err.message || 'Error desconocido al procesar la orden.';
             setNotification({
@@ -86,12 +86,12 @@ export const OrderListView: React.FC = () => {
             </header>
 
             <div style={styles.contentCard}>
-                {loading ? (
+                {loading && orders.length === 0 ? (
                     <div style={styles.stateContainer}>
                         <div style={styles.loader}></div>
                         <p style={styles.loadingText}>Sincronizando con el servidor de órdenes...</p>
                     </div>
-                ) : error ? (
+                ) : error && orders.length === 0 ? (
                     <div style={styles.stateContainer}>
                         <div style={styles.errorIcon}>❌</div>
                         <p style={styles.errorText}>{error}</p>
@@ -176,7 +176,12 @@ export const OrderListView: React.FC = () => {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onSubmit={handleCreateOrder}
-                onError={(msg) => setError(msg)}
+                onError={(msg) => setNotification({
+                    isOpen: true,
+                    title: 'ATENCIÓN',
+                    message: msg,
+                    type: 'warning'
+                })}
             />
 
             <ConfirmationModal 
