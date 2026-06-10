@@ -151,6 +151,9 @@ const styles: { [key: string]: React.CSSProperties } = {
         maxWidth: '500px',
         boxShadow: Theme.shadows.glow,
         animation: 'scaleUp 0.3s ease-out',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        margin: '20px'
     },
     header: { textAlign: 'center', marginBottom: '30px' },
     title: { color: Theme.colors.text, fontSize: '1.8rem', margin: 0 },

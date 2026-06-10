@@ -128,95 +128,97 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
                     <div style={styles.titleLine}></div>
                 </div>
 
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.row}>
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>Código de Control</label>
-                            <input 
-                                name="orderCode" 
-                                value={formData.orderCode} 
-                                onChange={handleChange} 
-                                style={styles.input} 
-                            />
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                    <div style={styles.scrollArea}>
+                        <div style={styles.row}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Código de Control</label>
+                                <input 
+                                    name="orderCode" 
+                                    value={formData.orderCode} 
+                                    onChange={handleChange} 
+                                    style={styles.input} 
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Fecha de Emisión</label>
+                                <input 
+                                    name="orderDate" 
+                                    type="date"
+                                    value={formData.orderDate} 
+                                    onChange={handleChange} 
+                                    style={styles.input} 
+                                />
+                            </div>
                         </div>
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>Fecha de Emisión</label>
-                            <input 
-                                name="orderDate" 
-                                type="date"
-                                value={formData.orderDate} 
-                                onChange={handleChange} 
-                                style={styles.input} 
-                            />
-                        </div>
-                    </div>
 
-                    <div style={styles.row}>
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>Correo del cliente</label>
-                            <input 
-                                name="userId" 
-                                type="email"
-                                value={formData.userId} 
-                                onChange={handleChange} 
-                                style={styles.input} 
-                                placeholder="usuario@gaminghub.com"
-                            />
+                        <div style={styles.row}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Correo del cliente</label>
+                                <input 
+                                    name="userId" 
+                                    type="email"
+                                    value={formData.userId} 
+                                    onChange={handleChange} 
+                                    style={styles.input} 
+                                    placeholder="usuario@gaminghub.com"
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Estado Inicial</label>
+                                <select 
+                                    name="status" 
+                                    value={formData.status} 
+                                    onChange={handleChange} 
+                                    style={styles.input}
+                                >
+                                    <option value="PENDING">PENDIENTE</option>
+                                    <option value="COMPLETED">COMPLETADA</option>
+                                    <option value="CANCELLED">CANCELADA</option>
+                                </select>
+                            </div>
                         </div>
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>Estado Inicial</label>
-                            <select 
-                                name="status" 
-                                value={formData.status} 
-                                onChange={handleChange} 
-                                style={styles.input}
-                            >
-                                <option value="PENDING">PENDIENTE</option>
-                                <option value="COMPLETED">COMPLETADA</option>
-                                <option value="CANCELLED">CANCELADA</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div style={styles.productsSection}>
-                        <div style={styles.productsHeader}>
-                            <label style={styles.label}>Artículos en el Carrito</label>
-                            <button type="button" onClick={() => setIsSelectorOpen(true)} style={styles.addBtn}>
-                                + Buscar Producto
-                            </button>
-                        </div>
-                        
-                        <div style={styles.productList}>
-                            {products.length === 0 ? (
-                                <div style={styles.emptyProducts}>
-                                    El carrito está vacío. Inicia la búsqueda de hardware.
-                                </div>
-                            ) : (
-                                products.map((product, index) => (
-                                    <div key={index} style={styles.productRow}>
-                                        <div style={styles.productInfo}>
-                                            <span style={styles.productNameText}>{product.name}</span>
-                                            <code style={styles.productIdText}>{product.productId}</code>
-                                        </div>
-                                        <div style={styles.productControls}>
-                                            <input 
-                                                type="number"
-                                                min="1"
-                                                value={product.quantity}
-                                                onChange={(e) => handleProductChange(index, 'quantity', parseInt(e.target.value) || 0)}
-                                                style={styles.quantityInput}
-                                            />
-                                            <div style={styles.priceInfo}>
-                                                <span style={styles.unitPrice}>${product.price.toFixed(2)}</span>
-                                                <span style={styles.rowTotal}>${(product.quantity * product.price).toFixed(2)}</span>
-                                            </div>
-                                            <button type="button" onClick={() => removeProduct(index)} style={styles.removeBtn}>
-                                                ✕
-                                            </button>
-                                        </div>
+                        <div style={styles.productsSection}>
+                            <div style={styles.productsHeader}>
+                                <label style={styles.label}>Artículos en el Carrito</label>
+                                <button type="button" onClick={() => setIsSelectorOpen(true)} style={styles.addBtn}>
+                                    + Buscar Producto
+                                </button>
+                            </div>
+                            
+                            <div style={styles.productList}>
+                                {products.length === 0 ? (
+                                    <div style={styles.emptyProducts}>
+                                        El carrito está vacío. Inicia la búsqueda de hardware.
                                     </div>
-                                ))
-                            )}
+                                ) : (
+                                    products.map((product, index) => (
+                                        <div key={index} style={styles.productRow}>
+                                            <div style={styles.productInfo}>
+                                                <span style={styles.productNameText}>{product.name}</span>
+                                                <code style={styles.productIdText}>{product.productId}</code>
+                                            </div>
+                                            <div style={styles.productControls}>
+                                                <input 
+                                                    type="number"
+                                                    min="1"
+                                                    value={product.quantity}
+                                                    onChange={(e) => handleProductChange(index, 'quantity', parseInt(e.target.value) || 0)}
+                                                    style={styles.quantityInput}
+                                                />
+                                                <div style={styles.priceInfo}>
+                                                    <span style={styles.unitPrice}>${product.price.toFixed(2)}</span>
+                                                    <span style={styles.rowTotal}>${(product.quantity * product.price).toFixed(2)}</span>
+                                                </div>
+                                                <button type="button" onClick={() => removeProduct(index)} style={styles.removeBtn}>
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -260,14 +262,24 @@ const styles: { [key: string]: React.CSSProperties } = {
         border: `1px solid ${Theme.colors.border}`,
         borderRadius: '24px',
         width: '95%', maxWidth: '850px',
-        padding: '40px',
         boxShadow: Theme.shadows.glow,
-        maxHeight: '90vh', overflowY: 'auto'
+        maxHeight: '80vh',
+        margin: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
     },
-    header: { textAlign: 'center', marginBottom: '30px' },
+    header: { textAlign: 'center', padding: '40px 40px 20px 40px' },
     title: { color: Theme.colors.text, margin: 0, fontSize: '2rem' },
     titleLine: { height: '3px', width: '60px', backgroundColor: Theme.colors.primary, margin: '10px auto 0', borderRadius: '2px', boxShadow: Theme.shadows.glow },
-    form: { display: 'flex', flexDirection: 'column', gap: '25px' },
+    scrollArea: {
+        flex: 1,
+        overflowY: 'auto',
+        padding: '0 40px 20px 40px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '25px'
+    },
     formGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
     row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' },
     label: { color: Theme.colors.textMuted, fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' },
@@ -314,7 +326,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     footer: {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${Theme.colors.border}`
+        padding: '20px 40px 40px 40px', borderTop: `1px solid ${Theme.colors.border}`,
+        backgroundColor: 'rgba(255,255,255,0.02)'
     },
     totalBox: { display: 'flex', flexDirection: 'column' },
     totalLabel: { fontSize: '0.85rem', color: Theme.colors.textMuted },

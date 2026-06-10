@@ -85,77 +85,79 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                     <div style={styles.titleLine}></div>
                 </div>
 
-                <form onSubmit={handleSubmit} style={styles.form}>
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Nombre del Artículo</label>
-                        <input 
-                            name="name" 
-                            value={formData.name} 
-                            onChange={handleChange} 
-                            style={styles.input} 
-                            placeholder="Ej: Consola Retro Z-9000"
-                        />
-                    </div>
-                    
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Descripción</label>
-                        <textarea 
-                            name="description" 
-                            value={formData.description} 
-                            onChange={handleChange} 
-                            style={{ ...styles.input, height: '80px', resize: 'none' }} 
-                            placeholder="Detalles técnicos o de catálogo..."
-                        />
-                    </div>
-
-                    <div style={styles.row}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                    <div style={styles.scrollArea}>
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>Precio (MXN)</label>
+                            <label style={styles.label}>Nombre del Artículo</label>
                             <input 
-                                name="price" 
-                                type="number" 
-                                step="0.01"
-                                min="0.01"
-                                value={formData.price} 
+                                name="name" 
+                                value={formData.name} 
                                 onChange={handleChange} 
                                 style={styles.input} 
-                                placeholder="0.00"
+                                placeholder="Ej: Consola Retro Z-9000"
                             />
                         </div>
+                        
                         <div style={styles.formGroup}>
-                            <label style={styles.label}>Stock Inicial</label>
+                            <label style={styles.label}>Descripción</label>
+                            <textarea 
+                                name="description" 
+                                value={formData.description} 
+                                onChange={handleChange} 
+                                style={{ ...styles.input, height: '80px', resize: 'none' }} 
+                                placeholder="Detalles técnicos o de catálogo..."
+                            />
+                        </div>
+
+                        <div style={styles.row}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Precio (MXN)</label>
+                                <input 
+                                    name="price" 
+                                    type="number" 
+                                    step="0.01"
+                                    min="0.01"
+                                    value={formData.price} 
+                                    onChange={handleChange} 
+                                    style={styles.input} 
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.label}>Stock Inicial</label>
+                                <input 
+                                    name="quantity" 
+                                    type="number" 
+                                    min="1"
+                                    value={formData.quantity} 
+                                    onChange={handleChange} 
+                                    style={styles.input} 
+                                    placeholder="0"
+                                />
+                            </div>
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>URL de Imagen de Portada</label>
                             <input 
-                                name="quantity" 
-                                type="number" 
-                                min="1"
-                                value={formData.quantity} 
+                                name="imageUrl" 
+                                value={formData.imageUrl} 
                                 onChange={handleChange} 
                                 style={styles.input} 
-                                placeholder="0"
+                                placeholder="https://servidor.com/imagen.jpg"
                             />
                         </div>
-                    </div>
 
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>URL de Imagen de Portada</label>
-                        <input 
-                            name="imageUrl" 
-                            value={formData.imageUrl} 
-                            onChange={handleChange} 
-                            style={styles.input} 
-                            placeholder="https://servidor.com/imagen.jpg"
-                        />
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Fabricante / Proveedor</label>
-                        <input 
-                            name="supplier" 
-                            value={formData.supplier} 
-                            onChange={handleChange} 
-                            style={styles.input} 
-                            placeholder="Ej: Nintendo, Sony, Fanatec..."
-                        />
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Fabricante / Proveedor</label>
+                            <input 
+                                name="supplier" 
+                                value={formData.supplier} 
+                                onChange={handleChange} 
+                                style={styles.input} 
+                                placeholder="Ej: Nintendo, Sony, Fanatec..."
+                            />
+                        </div>
                     </div>
 
                     <div style={styles.actions}>
@@ -192,13 +194,17 @@ const styles: { [key: string]: React.CSSProperties } = {
         borderRadius: '24px',
         width: '90%',
         maxWidth: '550px',
-        padding: '40px',
         boxShadow: Theme.shadows.glow,
         animation: 'scaleUp 0.3s ease-out',
+        maxHeight: '80vh',
+        margin: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
     },
     header: {
         textAlign: 'center',
-        marginBottom: '30px'
+        padding: '40px 40px 30px 40px'
     },
     title: {
         color: Theme.colors.text,
@@ -213,7 +219,10 @@ const styles: { [key: string]: React.CSSProperties } = {
         borderRadius: '2px',
         boxShadow: Theme.shadows.glow,
     },
-    form: {
+    scrollArea: {
+        flex: 1,
+        overflowY: 'auto',
+        padding: '0 40px 20px 40px',
         display: 'flex',
         flexDirection: 'column',
         gap: '20px'
@@ -249,7 +258,9 @@ const styles: { [key: string]: React.CSSProperties } = {
         display: 'flex',
         justifyContent: 'flex-end',
         gap: '15px',
-        marginTop: '10px'
+        padding: '20px 40px 40px 40px',
+        borderTop: `1px solid ${Theme.colors.border}`,
+        backgroundColor: 'rgba(255,255,255,0.02)'
     },
     cancelBtn: {
         flex: 1,
