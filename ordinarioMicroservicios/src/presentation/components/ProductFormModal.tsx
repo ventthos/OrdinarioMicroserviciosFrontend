@@ -245,6 +245,8 @@ const styles: { [key: string]: React.CSSProperties } = {
         letterSpacing: '0.5px'
     },
     input: {
+        width: '100%',
+        boxSizing: 'border-box',
         backgroundColor: Theme.colors.background,
         border: `1px solid ${Theme.colors.border}`,
         borderRadius: '12px',
@@ -260,7 +262,7 @@ const styles: { [key: string]: React.CSSProperties } = {
         gap: '15px',
         padding: '20px 40px 40px 40px',
         borderTop: `1px solid ${Theme.colors.border}`,
-        backgroundColor: 'rgba(255,255,255,0.02)'
+        backgroundColor: Theme.colors.surface
     },
     cancelBtn: {
         flex: 1,
