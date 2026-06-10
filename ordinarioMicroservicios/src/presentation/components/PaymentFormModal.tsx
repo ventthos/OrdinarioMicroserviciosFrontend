@@ -44,11 +44,9 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
                     setMessage(null);
                 }, 1500);
             } else {
-                // If onSubmit returns false without throwing, it's a generic failure
                 setMessage({ text: 'No se pudo procesar el cobro en este momento.', type: 'error' });
             }
         } catch (err: any) {
-            // Display actual error description from the repository
             setMessage({ text: err.message || 'Error crítico en la pasarela de pagos.', type: 'error' });
         } finally {
             setIsSubmitting(false);
@@ -71,6 +69,7 @@ export const PaymentFormModal: React.FC<PaymentFormModalProps> = ({ isOpen, onCl
                             <input
                                 type="number"
                                 step="0.01"
+                                min="0.01"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 style={styles.input}

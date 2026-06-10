@@ -38,13 +38,13 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
         const price = parseFloat(formData.price);
         const quantity = parseInt(formData.quantity);
 
-        if (price < 0) {
-            onError("El precio no puede ser negativo.");
+        if (price <= 0) {
+            onError("El precio debe ser mayor a 0.");
             return;
         }
 
         if (quantity <= 0) {
-            onError("El stock debe ser mayor a 0");
+            onError("El stock debe ser mayor a 0.");
             return;
         }
 
@@ -115,6 +115,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                                 name="price" 
                                 type="number" 
                                 step="0.01"
+                                min="0.01"
                                 value={formData.price} 
                                 onChange={handleChange} 
                                 style={styles.input} 
@@ -126,6 +127,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                             <input 
                                 name="quantity" 
                                 type="number" 
+                                min="1"
                                 value={formData.quantity} 
                                 onChange={handleChange} 
                                 style={styles.input} 

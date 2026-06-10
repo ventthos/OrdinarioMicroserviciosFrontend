@@ -45,7 +45,11 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
 
     const handleProductChange = (index: number, field: keyof OrderProduct, value: string | number) => {
         const newProducts = [...products];
-        newProducts[index] = { ...newProducts[index], [field]: value };
+        let newValue = value;
+        if (field === 'quantity') {
+            newValue = Math.max(1, parseInt(value.toString()) || 1);
+        }
+        newProducts[index] = { ...newProducts[index], [field]: newValue as any };
         setProducts(newProducts);
         updateTotal(newProducts);
     };
@@ -197,6 +201,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
                                         <div style={styles.productControls}>
                                             <input 
                                                 type="number"
+                                                min="1"
                                                 value={product.quantity}
                                                 onChange={(e) => handleProductChange(index, 'quantity', parseInt(e.target.value) || 0)}
                                                 style={styles.quantityInput}
