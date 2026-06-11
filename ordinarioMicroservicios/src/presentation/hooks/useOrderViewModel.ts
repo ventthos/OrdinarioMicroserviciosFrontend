@@ -62,6 +62,10 @@ export const useOrderViewModel = () => {
     }, [getOrderByIdUseCase, fetchPayments]);
 
     const processPayment = useCallback(async (paymentData: { ordenId: string, amount: number, paymentMethod: string }): Promise<boolean> => {
+        if (order && paymentData.amount > (order.debt ?? 0)) {
+            throw new Error("El pago es mayor a lo requerido");
+        }
+
         setLoading(true);
         try {
             await processPaymentUseCase.execute(paymentData);
@@ -74,7 +78,7 @@ export const useOrderViewModel = () => {
         } finally {
             setLoading(false);
         }
-    }, [processPaymentUseCase, searchOrder]);
+    }, [processPaymentUseCase, searchOrder, order]);
 
     const fetchAllOrders = useCallback(async () => {
         setLoading(true);

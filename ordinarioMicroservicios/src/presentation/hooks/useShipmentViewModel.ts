@@ -17,7 +17,8 @@ export const useShipmentViewModel = () => {
 
         try {
             const data = await getAllShipmentsUseCase.execute();
-            setShipments(data);
+            const sortedData = [...data].sort((a, b) => b.id - a.id);
+            setShipments(sortedData);
         } catch (err: any) {
             setError(err.message || "Error al obtener los envíos");
             console.error(err);
